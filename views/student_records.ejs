@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Academic Records</title>
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+</head>
+<body>
+  <header>
+    <h3>Academic Records</h3>
+    <nav><a href="/logout">Logout</a></nav>
+  </header>
+
+  <main>
+    <table>
+      <thead>
+        <tr>
+          <th>Academic Year</th>
+          <th>Module Name</th>
+          <th>Grade</th>
+          <th>Grade Result</th>
+          <th>Resit Grade</th>
+          <th>Resit Result</th>
+          <th>Credits Earned</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% records.forEach(record => { %>
+            <tr>
+                <td><%= record.academic_year %></td>
+                <td><%= record.module_name %></td>
+                <td><%= record.grade %></td>
+                <td><%= record.grade_result %></td>
+                <td><%= record.resit_grade %></td>
+                <td><%= record.resit_result %></td>
+                <td><%= record.credits_earned %></td>
+              </tr>
+              
+        <% }) %>
+      </tbody>
+    </table>
+  </main>
+
+  <footer>
+    <p>University © <%= currentYear %></p>
+  </footer>
+</body>
+</html>

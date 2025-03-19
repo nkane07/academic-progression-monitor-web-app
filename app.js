@@ -87,11 +87,69 @@ app.get("/admin", (req, res) => {
   }
 });
 
+
+//  Student Academic Records Route - PLACE THIS RIGHT HERE
+app.get("/student/records", (req, res) => {
+  if (req.session.userRole !== "student") {
+    return res.redirect("/");
+  }
+
+  const userId = req.session.userId;
+
+  // Find the student's internal ID from the students table using userId
+  const studentQuery = `SELECT student_number FROM students WHERE user_id = ?`;
+
+conn.query(studentQuery, [userId], (err, studentResult) => {
+  if (err) throw err;
+  if (studentResult.length === 0) return res.send("Student not found.");
+
+  const studentNumber = studentResult[0].student_number;
+  console.log("Student Number:", studentNumber);  // Should print 22-IFSY-0933003
+
+  const recordsQuery = `
+  SELECT 
+    e.academic_year,
+    m.module_name,
+    e.grade,
+    e.grade_result,
+    e.resit_grade,
+    e.resit_result,
+    e.credits_earned
+  FROM enrollment e
+  JOIN modules m ON e.module_code = m.module_code
+  WHERE e.student_id = ?
+`;
+
+
+  conn.query(recordsQuery, [studentNumber], (err, results) => {
+    if (err) throw err;
+    console.log("Enrollment Records:", results);
+    res.render("student_records", { records: results });
+  });
+});
+});
+ 
+
+
+
+
+// Admin dashboard (protected)
+app.get("/admin", (req, res) => {
+  if (req.session.userRole === "admin") {
+    res.render("admin_dashboard");
+  } else {
+    res.redirect("/");
+  }
+});
+
 // Logout
 app.get("/logout", (req, res) => {
   req.session.destroy();
   res.redirect("/");
 });
+
+
+
 
 // Start the server
 app.listen(3000, () => {

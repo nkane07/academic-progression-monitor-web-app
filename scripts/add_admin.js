@@ -19,7 +19,7 @@ bcrypt.hash(newAdminPassword, saltRounds, (err, hash) => {
   const query = "INSERT INTO users (username, password_hash, role, created_at, updated_at) VALUES (?, ?, 'admin', NOW(), NOW())";
   conn.query(query, [newAdminUsername, hash], (err, result) => {
     if (err) throw err;
-    console.log(`✅ Admin '${newAdminUsername}' added successfully!`);
+    console.log(`Admin '${newAdminUsername}' added successfully!`);
     process.exit();
   });
 });
