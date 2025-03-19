@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width" />
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+  <title>Academic Progression Login</title>
+</head>
+<body>
+  <header>
+    <h3>Academic Progression App</h3>
+    <nav>
+      <a href="/">Home</a>
+    </nav>
+  </header>
+
+  <main>
+    <form method="post" action="/login">
+      <input type="text" name="userField" placeholder="Username" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button>Login</button>
+    </form>
+  </main>
+
+  <footer>
+    <p>University © <%= currentYear %></p>
+  </footer>
+</body>
+</html>
