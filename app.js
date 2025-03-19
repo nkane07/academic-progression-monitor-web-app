@@ -15,6 +15,8 @@ app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
+
+
 // Global year middleware
 app.use((req, res, next) => {
   res.locals.currentYear = new Date().getFullYear();
@@ -48,16 +50,30 @@ app.post("/login", (req, res) => {
 
     if (results.length > 0) {
       const user = results[0];
-      
-      // bcrypt password check
+
       bcrypt.compare(password, user.password_hash, (err, isMatch) => {
         if (err) throw err;
         if (isMatch) {
           req.session.userId = user.user_id;
           req.session.userRole = user.role;
 
-          if (user.role === "admin") res.redirect("/admin");
-          else if (user.role === "student") res.redirect("/student");
+          // IF STUDENT, FETCH THEIR NAME FROM STUDENTS TABLE
+          if (user.role === "student") {
+            const studentQuery = "SELECT first_name, last_name FROM students WHERE user_id = ?";
+            conn.query(studentQuery, [user.user_id], (err, studentResult) => {
+              if (err) throw err;
+
+              if (studentResult.length > 0) {
+                req.session.studentName = `${studentResult[0].first_name} ${studentResult[0].last_name}`;
+              } else {
+                req.session.studentName = 'Student';
+              }
+
+              res.redirect("/student");
+            });
+          } else if (user.role === "admin") {
+            res.redirect("/admin");
+          }
         } else {
           res.send("Incorrect password. <a href='/'>Try again</a>");
         }
@@ -69,14 +85,17 @@ app.post("/login", (req, res) => {
 });
 
 
+
 // Student dashboard (protected)
 app.get("/student", (req, res) => {
   if (req.session.userRole === "student") {
-    res.render("student_dashboard");
+    const studentName = req.session.studentName || 'Student';
+    res.render("student_dashboard", { studentName: studentName });
   } else {
     res.redirect("/");
   }
 });
+
 
 // Admin dashboard (protected)
 app.get("/admin", (req, res) => {
@@ -128,10 +147,41 @@ conn.query(studentQuery, [userId], (err, studentResult) => {
   });
 });
 });
+
+app.get("/student/profile", (req, res) => {
+  if (req.session.userRole === "student") {
+    const userId = req.session.userId;
+    const query = "SELECT * FROM students WHERE user_id = ?";
+    conn.query(query, [userId], (err, results) => {
+      if (err) throw err;
+      if (results.length === 0) return res.send("Student not found");
+      res.render("student_profile", { student: results[0] });
+    });
+  } else {
+    res.redirect("/");
+  }
+});
+
+// ✅ Profile Update Route (POST)
+app.post("/student/profile/update", (req, res) => {
+  if (req.session.userRole === "student") {
+    const userId = req.session.userId;
+    const { profile_image, secondary_email } = req.body;
+    const updateQuery = `
+      UPDATE students 
+      SET profile_image = ?, secondary_email = ?
+      WHERE user_id = ?
+    `;
+    conn.query(updateQuery, [profile_image, secondary_email, userId], (err) => {
+      if (err) throw err;
+      res.redirect("/student/profile");
+    });
+  } else {
+    res.redirect("/");
+  }
+});
+
  
-
-
-
 
 // Admin dashboard (protected)
 app.get("/admin", (req, res) => {
@@ -147,8 +197,6 @@ app.get("/logout", (req, res) => {
   req.session.destroy();
   res.redirect("/");
 });
-
-
 
 
 // Start the server
