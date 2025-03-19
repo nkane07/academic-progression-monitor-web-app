@@ -36,38 +36,38 @@ app.get("/", (req, res) => {
 });
 
 // Handle login form submission
+const bcrypt = require('bcrypt'); // Add this at the top with other requires
+
 app.post("/login", (req, res) => {
-  const userField = req.body.userField;
+  const username = req.body.userField;
   const password = req.body.password;
 
   const query = "SELECT * FROM users WHERE username = ?";
-
-  conn.query(query, [userField], (err, results) => {
+  conn.query(query, [username], (err, results) => {
     if (err) throw err;
 
     if (results.length > 0) {
       const user = results[0];
-      // For simplicity, we're not hashing passwords here (DO hash in production)
-      if (password === user.password_hash) {
-        req.session.userId = user.user_id;
-        req.session.userRole = user.role;
+      
+      // bcrypt password check
+      bcrypt.compare(password, user.password_hash, (err, isMatch) => {
+        if (err) throw err;
+        if (isMatch) {
+          req.session.userId = user.user_id;
+          req.session.userRole = user.role;
 
-        // Redirect based on role
-        if (user.role === "admin") {
-          res.redirect("/admin");
-        } else if (user.role === "student") {
-          res.redirect("/student");
+          if (user.role === "admin") res.redirect("/admin");
+          else if (user.role === "student") res.redirect("/student");
         } else {
-          res.send("Unauthorized role");
+          res.send("Incorrect password. <a href='/'>Try again</a>");
         }
-      } else {
-        res.send("Incorrect password. <a href='/'>Try again</a>");
-      }
+      });
     } else {
       res.send("User not found. <a href='/'>Try again</a>");
     }
   });
 });
+
 
 // Student dashboard (protected)
 app.get("/student", (req, res) => {
