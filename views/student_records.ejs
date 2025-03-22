@@ -1,16 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Academic Records</title>
+  <title>Progression Statistics</title>
   <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
 </head>
 <body>
   <header>
-    <h3>Academic Records</h3>
-    <nav><a href="/logout">Logout</a></nav>
+    <h3>Academic Progression</h3>
+    <nav>
+      <a href="/student/profile" class="button">Profile</a>
+      <a href="/student" class="button">Dashboard</a>
+      <a href="/logout" class="button">Logout</a>
+    </nav>
   </header>
 
   <main>
+    <h2>Progression Statistics</h2>
+
+    <h3>Module Grades</h3>
     <table>
       <thead>
         <tr>
@@ -18,28 +25,31 @@
           <th>Module Name</th>
           <th>Grade</th>
           <th>Grade Result</th>
-          <th>Resit Grade</th>
-          <th>Resit Result</th>
-          <th>Credits Earned</th>
         </tr>
       </thead>
       <tbody>
         <% records.forEach(record => { %>
-            <tr>
-                <td><%= record.academic_year %></td>
-                <td><%= record.module_name %></td>
-                <td><%= record.grade %></td>
-                <td><%= record.grade_result %></td>
-                <td><%= record.resit_grade %></td>
-                <td><%= record.resit_result %></td>
-                <td><%= record.credits_earned %></td>
-              </tr>
-              
+          <tr>
+            <td><%= record.academic_year %></td>
+            <td><%= record.module_name %></td>
+            <td><%= record.grade %></td>
+            <td><%= record.grade_result %></td>
+          </tr>
         <% }) %>
       </tbody>
     </table>
-    <a href="/student" class="button">Back to Dashboard</a>
-    <a href="/student/profile" class="button">View Profile</a>
+
+    <h3>Progression Summary</h3>
+    <p><strong>Total Credits:</strong> <%= totalCredits %> / <%= requiredCredits %></p>
+    <p><strong>Average Grade:</strong> <%= averageGrade %> (Min 40%)</p>
+    <p><strong>Failed Modules:</strong> <%= failedModules.join(', ') || 'None' %></p>
+    <p><strong>Modules requiring resit:</strong> <%= resitModules.join(', ') || 'None' %></p>
+    
+    <h3>Progression Decision:</h3>
+    <p><strong><%= decision %></strong></p>
+    
+
+   
   </main>
 
   <footer>

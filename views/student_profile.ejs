@@ -8,39 +8,46 @@
   <header>
     <h3>Student Profile</h3>
     <nav>
-      <a href="/student">Dashboard</a> |
-      <a href="/logout">Logout</a>
+      <a href="/student" class="button">Dashboard</a>
+      <a href="/logout" class="button">Logout</a>
     </nav>
   </header>
 
   <main>
     <h2>Welcome, <%= student.first_name %> <%= student.last_name %></h2>
 
-     <!-- Profile Image with Fallback  -->
-     <img src="<%= student.profile_image ? student.profile_image : '/images/default-profile.png' %>" 
-     alt="Profile Image" 
-     width="150" 
-     height="150" 
-     style="border-radius: 50%;">
-
+    <!-- Profile Image with Fallback -->
+    <img src="<%= student.profile_image ? student.profile_image : '/images/default-profile.png' %>" 
+         alt="Profile Image" 
+         width="150" 
+         height="150" 
+         style="border-radius: 50%;">
 
     <p><strong>Student Number:</strong> <%= student.student_number %></p>
     <p><strong>Pathway:</strong> <%= student.pathway %></p>
     <p><strong>Level / Stage:</strong> <%= student.current_year %></p>
-    <p><strong>Email:</strong> <%= student.email %></p>
-    <p><strong>Secondary Email:</strong> <%= student.secondary_email %></p>
-    <p><strong>Phone:</strong> <%= student.phone %></p>
+    <p><strong>Email:</strong> <%= student.contact_email %></p>
+
+    
+    <p><strong>Secondary Email:</strong> <%= student.secondary_email || 'None' %></p>  
+    <p><strong>Phone:</strong> <%= student.phone_number || 'None' %></p>  
 
     <h3>Edit Profile Image & Secondary Email</h3>
-    <form action="/student/profile/update" method="POST">
-      <label for="profile_image">Profile Image URL:</label><br>
-      <input type="text" id="profile_image" name="profile_image" value="<%= student.profile_image %>"><br><br>
+<form action="/student/profile/update" method="POST">
+  <label for="profile_image">Profile Image URL:</label><br>
+  <input type="text" id="profile_image" name="profile_image" placeholder="<%= student.profile_image %>"><br><br>
 
-      <label for="secondary_email">Secondary Email:</label><br>
-      <input type="email" id="secondary_email" name="secondary_email" value="<%= student.secondary_email %>"><br><br>
+  <label for="secondary_email">Secondary Email:</label><br>
+  <input type="email" id="secondary_email" name="secondary_email" placeholder="<%= student.secondary_email %>"><br><br>
 
-      <button type="submit">Update</button>
-    </form>
+  <button type="submit">Update</button>
+</form>
+
+<p><em>Leave blank to keep your current profile image or secondary email.</em></p>
+
+
+
+    
   </main>
 
   <footer>
