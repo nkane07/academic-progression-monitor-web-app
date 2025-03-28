@@ -316,6 +316,57 @@ app.get("/student/profile", (req, res) => {
   }
 });
 
+// Student Inbox
+app.get("/student/messages", (req, res) => {
+  if (req.session.userRole === "student") {
+    const userId = req.session.userId;
+    const query = `
+      SELECT m.message_id, m.subject, m.sent_at, m.is_read, u.username AS sender_name
+      FROM messages m
+      JOIN users u ON m.sender_id = u.user_id
+      WHERE m.recipient_id = ?
+      ORDER BY m.sent_at DESC
+    `;
+    conn.query(query, [userId], (err, results) => {
+      if (err) throw err;
+      res.render("student_messages", { messages: results });
+    });
+  } else {
+    res.redirect("/");
+  }
+});
+
+// View specific message by ID
+app.get("/student/messages/:id", (req, res) => {
+  const userId = req.session.userId;
+  const messageId = req.params.id;
+
+  const messageQuery = `
+    SELECT m.*, u.username AS sender_name 
+    FROM messages m 
+    JOIN users u ON m.sender_id = u.user_id 
+    WHERE m.recipient_id = ? AND m.message_id = ?
+  `;
+
+  conn.query(messageQuery, [userId, messageId], (err, result) => {
+    if (err) throw err;
+    if (result.length === 0) return res.send("Message not found.");
+
+    // Mark message as read
+    conn.query(`UPDATE messages SET is_read = 1 WHERE message_id = ?`, [messageId]);
+
+    res.render("student_view_message", {
+      message: result[0]
+    });
+  });
+});
+
+// Contact advisor form
+app.get("/student/messages/contact", (req, res) => {
+  res.render("student_compose_message");
+});
+
+// Handle form
 
 
 
