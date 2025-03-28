@@ -1,41 +1,188 @@
+/* === BUTTON STYLE === */
 .button {
-    padding: 10px 20px;
-    background-color: #3f8efc;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-  }
-  .button:hover {
-    background-color: #2561b2;
+  padding: 10px 20px;
+  background-color: #3f8efc;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #2561b2;
+}
+
+/* === HEADER & NAVIGATION === */
+header {
+  text-align: center;
+  padding: 20px 10px;
+  background-color: #f0f4ff;
+  border-bottom: 1px solid #ccc;
+}
+
+.nav-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+/* === PROGRESS BAR === */
+.progress-container {
+  width: 100%;
+  background-color: #e0e0e0;
+  border-radius: 10px;
+  height: 20px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  transition: width 0.3s ease-in-out;
+  border-radius: 10px;
+}
+
+.progress-label {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.progress-text {
+  color: black;
+  font-weight: bold;
+  text-align: center;
+  display: block;
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+/* === COLLAPSIBLE BOX === */
+details.progression-details {
+  margin-top: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f9f9f9;
+  width: fit-content;
+}
+
+details.progression-details summary {
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+details.progression-details ul {
+  margin-top: 10px;
+  margin-left: 20px;
+  list-style: disc;
+}
+
+/* === GENERAL RESET === */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* === LAYOUT === */
+main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* === TABLES === */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  word-wrap: break-word;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  font-size: 0.95rem;
+}
+
+th {
+  background-color: #f5f5f5;
+}
+
+/* === SUMMARY CARD === */
+.summary-card {
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 30px;
+}
+
+/* === BADGES === */
+.badge {
+  padding: 5px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+}
+
+.badge-success {
+  background-color: #28a745;
+}
+
+.badge-warning {
+  background-color: #ffc107;
+}
+
+.badge-danger {
+  background-color: #dc3545;
+}
+
+/* === MOBILE STYLES === */
+@media screen and (max-width: 768px) {
+  main {
+    padding: 10px;
   }
 
-  .progress-container {
-    width: 100%;
-    background-color: #e0e0e0;
-    border-radius: 10px;
-    height: 20px;
+  header h3 {
+    font-size: 1.2rem;
+  }
+
+  .nav-buttons {
+    justify-content: center;
     margin-top: 10px;
-    overflow: hidden;
   }
-  
-  .progress-bar {
-    height: 100%;
-    transition: width 0.3s ease-in-out;
-    border-radius: 10px;
-  }
-  
-  .progress-label {
-    margin-top: 10px;
-    font-weight: bold;
-  }
-  
-  .progress-text {
-    color: black;
-    font-weight: bold;
-    text-align: center;
+
+  table, thead, tbody, th, td, tr {
     display: block;
     width: 100%;
-    font-size: 0.9rem;
-    
   }
-  
+
+  thead {
+    display: none;
+  }
+
+  tr {
+    margin-bottom: 15px;
+    border-bottom: 2px solid #eee;
+  }
+
+  td {
+    text-align: right;
+    padding-left: 50%;
+    position: relative;
+  }
+
+  td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 10px;
+    font-weight: bold;
+    text-align: left;
+  }
+}

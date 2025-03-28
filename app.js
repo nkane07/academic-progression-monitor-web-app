@@ -123,7 +123,6 @@ app.get("/admin", (req, res) => {
 });
 
 
-//  Student Academic Records Route 
 app.get("/student/records", (req, res) => {
   if (req.session.userRole !== "student") return res.redirect("/");
 
@@ -136,7 +135,6 @@ app.get("/student/records", (req, res) => {
     if (studentResult.length === 0) return res.send("Student not found.");
 
     const { student_number, pathway } = studentResult[0];
-    console.log("Student Number:", student_number);
 
     const recordsQuery = `
       SELECT 
@@ -158,13 +156,24 @@ app.get("/student/records", (req, res) => {
 
       let totalCredits = 0, totalGrade = 0, gradedModules = 0;
       let failedModules = [], resitModules = [], coreFails = 0;
+      let level1Credits = 0;
+      const level1ModuleCodes = [
+        'IFSY-123','IFSY-125','IFSY-126','IFSY-127','IFSY-128','IFSY-129','IFSY-130','IFSY-131','IFSY-132','IFSY-133',
+        'BSAS-102','BSAS-109','BSAS-112','BSAS-113','IFSY-124','FINA-107'
+      ];
 
       // Count credits and collect data
+      const attemptTracker = {};
+
       records.forEach(record => {
         const grade = parseFloat(record.grade) || 0;
+        const modCode = record.module_code;
 
         if (record.grade_result === 'pass' || record.grade_result === 'pass capped') {
           totalCredits += record.credits_earned;
+          if (level1ModuleCodes.includes(modCode)) {
+            level1Credits += record.credits_earned;
+          }
         }
 
         if (record.grade_result !== 'excused' && record.grade_result !== 'absent') {
@@ -172,31 +181,39 @@ app.get("/student/records", (req, res) => {
           gradedModules++;
         }
 
-        if (['fail', 'absent', 'excused'].includes(record.grade_result)) {
+        // Track failed attempts per module
+        if (['fail', 'absent'].includes(record.grade_result)) {
+          attemptTracker[modCode] = (attemptTracker[modCode] || 0) + 1;
           resitModules.push(record.module_name);
           failedModules.push(record.module_name);
         }
+
+        if (['excused'].includes(record.grade_result)) {
+          resitModules.push(record.module_name);
+        }
       });
 
-      // Determine estimated level based on credits
-      let requiredCredits, currentLevel;
+      // Determine estimated current year based on total credits
+      let requiredCredits, currentLevel, currentLevelLabel;
       if (totalCredits >= 240) {
         requiredCredits = 360;
         currentLevel = 'L3';
+        currentLevelLabel = 'Year 3';
       } else if (totalCredits >= 120) {
         requiredCredits = 240;
         currentLevel = 'L2';
+        currentLevelLabel = 'Year 2';
       } else {
         requiredCredits = 120;
         currentLevel = 'L1';
+        currentLevelLabel = 'Year 1';
       }
 
-      // Define core modules
-      const coreModules = (pathway === 'Information Systems' && currentLevel === 'L2') ? ['IFSY259', 'IFSY240']
-                        : (pathway === 'Business Data Analytics' && currentLevel === 'L2') ? ['IFSY257']
-                        : [];
+      // Core module check
+      const coreModules = (pathway === 'Information Systems' && currentLevel === 'L2') ? ['IFSY-259', 'IFSY-240']
+                       : (pathway === 'Business Data Analytics' && currentLevel === 'L2') ? ['IFSY-257']
+                       : [];
 
-      // Check for failed core modules
       records.forEach(record => {
         if (coreModules.includes(record.module_code) && ['fail', 'absent'].includes(record.grade_result)) {
           coreFails++;
@@ -205,13 +222,32 @@ app.get("/student/records", (req, res) => {
 
       const averageGrade = gradedModules ? (totalGrade / gradedModules).toFixed(2) : 0;
 
-      // Determine progression decision
-      let decision = "Progress to Year 2";
-      if (totalCredits < 100 || averageGrade < 40 || coreFails > 0) {
+      // Determine final decision
+      if (currentLevelLabel === 'Year 3') {
+        decision = "Progress to Final Year";
+      } else {
+        const nextYearNum = parseInt(currentLevelLabel.split(" ")[1]) + 1;
+        decision = `Progress to Year ${nextYearNum}`;
+      }
+      
+
+      if (totalCredits < 100 || averageGrade < 40) {
         decision = "Resit Required or Contact Advisor";
       }
+
       if (coreFails > 0) {
         decision = "Failed Core Module - Contact Advisor";
+      }
+
+      if (currentLevel === 'L2' || currentLevel === 'L3') {
+        if (level1Credits < 120) {
+          decision = "Incomplete Year 1 Modules - Cannot Progress";
+        }
+      }
+
+      const exceededAttempts = Object.entries(attemptTracker).filter(([_, count]) => count >= 4);
+      if (exceededAttempts.length > 0) {
+        decision = "Exceeded Max Attempts - Contact Advisor";
       }
 
       res.render("student_records", {

@@ -5,32 +5,18 @@
   <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="/styles.css">
-  <style>
-    .progress-container {
-      margin-top: 10px;
-      width: 100%;
-      background-color: #eee;
-      border-radius: 10px;
-    }
-    .progress-bar {
-      height: 15px;
-      border-radius: 10px;
-    }
-    .progress-label {
-      text-align: center;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-  </style>
+  
 </head>
 <body>
   <header>
     <h3>Student Profile</h3>
-    <nav>
-      <a href="/student" class="button"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-      <a href="/logout" class="button"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    <nav class="nav-buttons">
+      <a href="/student/profile" class="button">Profile</a>
+      <a href="/student" class="button">Dashboard</a>
+      <a href="/logout" class="button">Logout</a>
     </nav>
   </header>
+  
 
   <main>
     <h2>Welcome, <%= student.first_name %> <%= student.last_name %></h2>

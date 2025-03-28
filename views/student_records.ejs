@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Progression Statistics</title>
-  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
-</head>
+  <head>
+    <title>Progression Statistics</title>
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-dyZ88mC6Up2uqS4h/K3rMsj62PZfW+nR6vn5bdnU8pHRH5tJzJrKX9F3b6QJY4J6XJo+1E3Lj+WYo4VZ2+5c1g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  
 <body>
   <header>
     <h3>Academic Progression</h3>
@@ -15,9 +18,9 @@
   </header>
 
   <main>
-    <h2>Progression Statistics</h2>
+    <h2><i class="fas fa-chart-line"></i> Progression Statistics</h2>
 
-    <h3>Module Grades</h3>
+    <h3><i class="fas fa-book"></i> Module Grades</h3>
     <table>
       <thead>
         <tr>
@@ -30,35 +33,58 @@
       <tbody>
         <% records.forEach(record => { %>
           <tr>
-            <td><%= record.academic_year %></td>
-            <td><%= record.module_name %></td>
-            <td><%= record.grade %></td>
-            <td><%= record.grade_result %></td>
+            <td data-label="Academic Year"><%= record.academic_year %></td>
+            <td data-label="Module Name"><%= record.module_name %></td>
+            <td data-label="Grade"><%= record.grade %></td>
+            <td data-label="Grade Result"><%= record.grade_result %></td>
           </tr>
         <% }) %>
       </tbody>
     </table>
 
-    <p><strong>Level / Stage:</strong> <%= currentLevel %></p>
+    <h3><i class="fas fa-clipboard-check"></i> Progression Summary</h3>
+    <p><strong><i class="fas fa-graduation-cap"></i> Level / Stage:</strong> Year <%= currentLevel.replace('L', '') %></p>
 
+    <!-- Total Credits Progress Bar -->
+    <p><strong><i class="fas fa-coins"></i> Total Credits:</strong> <%= totalCredits %> / <%= requiredCredits %></p>
+    <div class="progress-container">
+      <div class="progress-bar" style="width: <%= Math.min((totalCredits / requiredCredits) * 100, 100) %>%; background-color: <%= totalCredits >= requiredCredits ? '#28a745' : '#ffc107' %>;">
+        <span class="progress-text"><%= Math.round((totalCredits / requiredCredits) * 100) %>%</span>
+      </div>
+    </div>
 
-    <h3>Progression Summary</h3>
-<p><strong>Level / Stage:</strong> <%= currentLevel %></p>
-<p><strong>Total Credits:</strong> <%= totalCredits %> / <%= requiredCredits %></p>
-<p><strong>Average Grade:</strong> <%= averageGrade %> (Min 40%)</p>
-<p><strong>Failed Modules:</strong> <%= failedModules.join(', ') || 'None' %></p>
-<p><strong>Modules requiring resit:</strong> <%= resitModules.join(', ') || 'None' %></p>
+    <!-- Average Grade Progress Bar -->
+    <p><strong><i class="fas fa-percent"></i> Average Grade:</strong> <%= averageGrade %> (Min 40%)</p>
+    <div class="progress-container">
+      <div class="progress-bar" style="width: <%= Math.min(averageGrade, 100) %>%; background-color: <%= averageGrade >= 40 ? '#28a745' : '#dc3545' %>;">
+        <span class="progress-text"><%= Math.round(averageGrade) %>%</span>
+      </div>
+    </div>
 
-    
-    <h3>Progression Decision:</h3>
+    <!-- Failed & Resit Modules -->
+    <p><strong><i class="fas fa-times-circle"></i> Failed Modules:</strong> <%= failedModules.join(', ') || 'None' %></p>
+    <p><strong><i class="fas fa-undo-alt"></i> Modules requiring resit:</strong> <%= resitModules.join(', ') || 'None' %></p>
+
+    <!-- Decision -->
+    <h3><i class="fas fa-balance-scale"></i> Progression Decision <i class="fas fa-info-circle" title="Based on academic rules and module performance."></i></h3>
     <p><strong><%= decision %></strong></p>
-    
 
-   
+    <!-- Progression Requirements -->
+    <details class="progression-details">
+      <summary><i class="fas fa-list-alt"></i> Progression Requirements</summary>
+      <ul>
+        <li>✅ Earn at least 100+ credits to progress.</li>
+        <li>✅ Maintain a minimum average of 40%.</li>
+        <li>✅ Pass all core modules at your current level.</li>
+        <li>⚠️ Only one resit per module allowed per year.</li>
+        <li>❌ Four attempts maximum per module.</li>
+        <li>⚠️ All Year 1 (Level 01) modules must be passed before final year.</li>
+      </ul>
+    </details>
   </main>
 
   <footer>
-    <p>University © <%= currentYear %></p>
+    <p>University Portal © <%= currentYear %></p>
   </footer>
 </body>
 </html>
