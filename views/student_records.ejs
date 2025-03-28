@@ -39,11 +39,16 @@
       </tbody>
     </table>
 
+    <p><strong>Level / Stage:</strong> <%= currentLevel %></p>
+
+
     <h3>Progression Summary</h3>
-    <p><strong>Total Credits:</strong> <%= totalCredits %> / <%= requiredCredits %></p>
-    <p><strong>Average Grade:</strong> <%= averageGrade %> (Min 40%)</p>
-    <p><strong>Failed Modules:</strong> <%= failedModules.join(', ') || 'None' %></p>
-    <p><strong>Modules requiring resit:</strong> <%= resitModules.join(', ') || 'None' %></p>
+<p><strong>Level / Stage:</strong> <%= currentLevel %></p>
+<p><strong>Total Credits:</strong> <%= totalCredits %> / <%= requiredCredits %></p>
+<p><strong>Average Grade:</strong> <%= averageGrade %> (Min 40%)</p>
+<p><strong>Failed Modules:</strong> <%= failedModules.join(', ') || 'None' %></p>
+<p><strong>Modules requiring resit:</strong> <%= resitModules.join(', ') || 'None' %></p>
+
     
     <h3>Progression Decision:</h3>
     <p><strong><%= decision %></strong></p>

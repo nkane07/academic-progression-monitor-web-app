@@ -3,51 +3,82 @@
 <head>
   <title>Student Profile</title>
   <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .progress-container {
+      margin-top: 10px;
+      width: 100%;
+      background-color: #eee;
+      border-radius: 10px;
+    }
+    .progress-bar {
+      height: 15px;
+      border-radius: 10px;
+    }
+    .progress-label {
+      text-align: center;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
   <header>
     <h3>Student Profile</h3>
     <nav>
-      <a href="/student" class="button">Dashboard</a>
-      <a href="/logout" class="button">Logout</a>
+      <a href="/student" class="button"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+      <a href="/logout" class="button"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </nav>
   </header>
 
   <main>
     <h2>Welcome, <%= student.first_name %> <%= student.last_name %></h2>
 
-    <!-- Profile Image with Fallback -->
+    <!-- Profile Image with Tooltip -->
     <img src="<%= student.profile_image ? student.profile_image : '/images/default-profile.png' %>" 
          alt="Profile Image" 
          width="150" 
          height="150" 
-         style="border-radius: 50%;">
+         style="border-radius: 50%;" 
+         title="Current Profile Picture">
 
-    <p><strong>Student Number:</strong> <%= student.student_number %></p>
-    <p><strong>Pathway:</strong> <%= student.pathway %></p>
-    <p><strong>Level / Stage:</strong> <%= student.current_year %></p>
-    <p><strong>Email:</strong> <%= student.contact_email %></p>
+    <p><strong><i class="fa-solid fa-id-badge"></i> Student Number:</strong> <%= student.student_number %></p>
+    <p><strong><i class="fa-solid fa-diagram-project"></i> Pathway:</strong> <%= student.pathway %></p>
 
-    
-    <p><strong>Secondary Email:</strong> <%= student.secondary_email || 'None' %></p>  
-    <p><strong>Phone:</strong> <%= student.phone_number || 'None' %></p>  
+    <!-- Level/Stage with Tooltip -->
+<p title="This is your current academic year/stage of study.">
+  <strong><i class="fa-solid fa-graduation-cap"></i> Level / Stage:</strong> <%= student.current_level %>
+</p>
 
-    <h3>Edit Profile Image & Secondary Email</h3>
-<form action="/student/profile/update" method="POST">
-  <label for="profile_image">Profile Image URL:</label><br>
-  <input type="text" id="profile_image" name="profile_image" placeholder="<%= student.profile_image %>"><br><br>
+<!-- Progress Bar with Label -->
+<div class="progress-label">Year <%= currentYearDisplay %> Progress</div>
 
-  <label for="secondary_email">Secondary Email:</label><br>
-  <input type="email" id="secondary_email" name="secondary_email" placeholder="<%= student.secondary_email %>"><br><br>
-
-  <button type="submit">Update</button>
-</form>
-
-<p><em>Leave blank to keep your current profile image or secondary email.</em></p>
+<div class="progress-container">
+  <div class="progress-bar" 
+       style="width: <%= currentYearDisplay * 33.33 %>%; background-color: <%= currentYearDisplay == 1 ? '#fbbc04' : currentYearDisplay == 2 ? '#34a853' : '#0f9d58' %>;">
+    <span class="progress-text"><%= (currentYearDisplay * 33.33).toFixed(0) %>%</span>
+  </div>
+</div>
 
 
 
-    
+    <p><strong><i class="fa-solid fa-envelope"></i> Email:</strong> <%= student.contact_email %></p>
+    <p><strong><i class="fa-solid fa-at"></i> Secondary Email:</strong> <%= student.secondary_email || 'None' %></p>
+    <p><strong><i class="fa-solid fa-phone"></i> Phone:</strong> <%= student.phone_number || 'None' %></p>
+
+    <h3><i class="fa-solid fa-user-pen"></i> Edit Profile Image & Secondary Email</h3>
+    <form action="/student/profile/update" method="POST" enctype="multipart/form-data">
+      <label for="profile_image">Upload Profile Image:</label><br>
+      <input type="file" id="profile_image" name="profile_image"><br><br>
+
+      <label for="secondary_email">Secondary Email:</label><br>
+      <input type="email" id="secondary_email" name="secondary_email" placeholder="<%= student.secondary_email %>"><br><br>
+
+      <button type="submit"><i class="fa-solid fa-floppy-disk"></i> Update</button>
+    </form>
+
+    <p><em>Leave blank to keep your current image and email.</em></p>
   </main>
 
   <footer>

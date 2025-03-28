@@ -2,6 +2,22 @@ const express = require("express");
 const app = express();
 const mysql = require("mysql2");
 const session = require("express-session");
+const path = require("path");
+const multer = require("multer");
+
+// Set up Multer storage for profile images
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/uploads"); // Folder must exist
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + path.extname(file.originalname);
+    cb(null, file.fieldname + "-" + uniqueSuffix);
+  },
+});
+
+const upload = multer({ storage: storage });
+
 
 const conn = mysql.createPool({
   host: "localhost",
@@ -112,28 +128,29 @@ app.get("/student/records", (req, res) => {
   if (req.session.userRole !== "student") return res.redirect("/");
 
   const userId = req.session.userId;
-  const studentQuery = `SELECT student_number, pathway, current_year FROM students WHERE user_id = ?`;
+
+  const studentQuery = `SELECT student_number, pathway FROM students WHERE user_id = ?`;
 
   conn.query(studentQuery, [userId], (err, studentResult) => {
     if (err) throw err;
     if (studentResult.length === 0) return res.send("Student not found.");
 
-    const { student_number, pathway, current_year } = studentResult[0];
+    const { student_number, pathway } = studentResult[0];
     console.log("Student Number:", student_number);
 
     const recordsQuery = `
       SELECT 
-  e.academic_year,
-  m.module_name,
-  e.module_code,
-  e.grade,
-  e.grade_result,
-  e.resit_grade,
-  e.resit_result,
-  e.credits_earned
-FROM enrollment e
-JOIN modules m ON e.module_code = m.module_code
-WHERE e.student_id = ?
+        e.academic_year,
+        m.module_name,
+        e.module_code,
+        e.grade,
+        e.grade_result,
+        e.resit_grade,
+        e.resit_result,
+        e.credits_earned
+      FROM enrollment e
+      JOIN modules m ON e.module_code = m.module_code
+      WHERE e.student_id = ?
     `;
 
     conn.query(recordsQuery, [student_number], (err, records) => {
@@ -142,10 +159,7 @@ WHERE e.student_id = ?
       let totalCredits = 0, totalGrade = 0, gradedModules = 0;
       let failedModules = [], resitModules = [], coreFails = 0;
 
-      const coreModules = (pathway === 'Information Systems' && current_year === 'L2') ? ['IFSY259', 'IFSY240']
-                        : (pathway === 'Business Data Analytics' && current_year === 'L2') ? ['IFSY257']
-                        : [];
-
+      // Count credits and collect data
       records.forEach(record => {
         const grade = parseFloat(record.grade) || 0;
 
@@ -153,43 +167,53 @@ WHERE e.student_id = ?
           totalCredits += record.credits_earned;
         }
 
-        // For average grade calc (excluding excused/absent)
         if (record.grade_result !== 'excused' && record.grade_result !== 'absent') {
           totalGrade += grade;
           gradedModules++;
         }
 
-        // Check core module fails
-        if (coreModules.includes(record.module_code) && (record.grade_result === 'fail' || record.grade_result === 'absent')) {
-          coreFails++;
-        }
-
-        // Resit logic
         if (['fail', 'absent', 'excused'].includes(record.grade_result)) {
           resitModules.push(record.module_name);
           failedModules.push(record.module_name);
         }
       });
 
-      const averageGrade = gradedModules ? (totalGrade / gradedModules).toFixed(2) : 0;
-      let decision = "Progress to Year 2";
+      // Determine estimated level based on credits
+      let requiredCredits, currentLevel;
+      if (totalCredits >= 240) {
+        requiredCredits = 360;
+        currentLevel = 'L3';
+      } else if (totalCredits >= 120) {
+        requiredCredits = 240;
+        currentLevel = 'L2';
+      } else {
+        requiredCredits = 120;
+        currentLevel = 'L1';
+      }
 
-      // Apply rules
+      // Define core modules
+      const coreModules = (pathway === 'Information Systems' && currentLevel === 'L2') ? ['IFSY259', 'IFSY240']
+                        : (pathway === 'Business Data Analytics' && currentLevel === 'L2') ? ['IFSY257']
+                        : [];
+
+      // Check for failed core modules
+      records.forEach(record => {
+        if (coreModules.includes(record.module_code) && ['fail', 'absent'].includes(record.grade_result)) {
+          coreFails++;
+        }
+      });
+
+      const averageGrade = gradedModules ? (totalGrade / gradedModules).toFixed(2) : 0;
+
+      // Determine progression decision
+      let decision = "Progress to Year 2";
       if (totalCredits < 100 || averageGrade < 40 || coreFails > 0) {
         decision = "Resit Required or Contact Advisor";
       }
-      if (coreFails > 0) decision = "Failed Core Module - Contact Advisor";
-      
+      if (coreFails > 0) {
+        decision = "Failed Core Module - Contact Advisor";
+      }
 
-      let requiredCredits;
-if (current_year === 'L3') {
-    requiredCredits = 360;
-} else if (current_year === 'L2') {
-    requiredCredits = 240;
-} else {
-    requiredCredits = 120;
-}
-      console.log("Enrollment Records:", records);
       res.render("student_records", {
         records,
         totalCredits,
@@ -197,7 +221,8 @@ if (current_year === 'L3') {
         averageGrade,
         failedModules,
         resitModules,
-        decision
+        decision,
+        currentLevel
       });
     });
   });
@@ -205,17 +230,49 @@ if (current_year === 'L3') {
 
 
 
+
 app.get("/student/profile", (req, res) => {
   if (req.session.userRole === "student") {
     const userId = req.session.userId;
+
     const studentQuery = `SELECT * FROM students WHERE user_id = ?`;
     conn.query(studentQuery, [userId], (err, studentResult) => {
       if (err) throw err;
       if (studentResult.length === 0) return res.send("Student not found.");
 
-      res.render("student_profile", {
-        student: studentResult[0],
-        cleared: req.query.cleared 
+      const student = studentResult[0];
+
+      // Logic to calculate current year based on credits
+      const creditsQuery = `
+        SELECT SUM(credits_earned) AS total_credits 
+        FROM enrollment 
+        WHERE student_id = ? AND grade_result IN ('pass', 'pass capped')
+      `;
+
+      conn.query(creditsQuery, [student.student_number], (err, creditResult) => {
+        if (err) throw err;
+
+        const totalCredits = creditResult[0].total_credits || 0;
+
+        let currentLevel = "Year 1";
+        let currentYearDisplay = 1;
+
+        if (totalCredits >= 240) {
+          currentLevel = "Year 3";
+          currentYearDisplay = 3;
+        } else if (totalCredits >= 120) {
+          currentLevel = "Year 2";
+          currentYearDisplay = 2;
+        }
+
+        res.render("student_profile", {
+          student: {
+            ...student,
+            current_level: currentLevel
+          },
+          currentYearDisplay,
+          cleared: req.query.cleared
+        });
       });
     });
   } else {
@@ -224,28 +281,24 @@ app.get("/student/profile", (req, res) => {
 });
 
 
+
+
 // Profile Update Route 
-app.post("/student/profile/update", (req, res) => {
+app.post("/student/profile/update", upload.single("profile_image"), (req, res) => {
   if (req.session.userRole === "student") {
     const userId = req.session.userId;
-    const { profile_image, secondary_email } = req.body;
+    const { secondary_email } = req.body;
+    const profileImage = req.file ? `/uploads/${req.file.filename}` : null;
 
-    // Get current student data first
-    const getStudentQuery = `SELECT profile_image, secondary_email FROM students WHERE user_id = ?`;
-    conn.query(getStudentQuery, [userId], (err, results) => {
+    const selectQuery = `SELECT profile_image, secondary_email FROM students WHERE user_id = ?`;
+    conn.query(selectQuery, [userId], (err, results) => {
       if (err) throw err;
-
       const current = results[0];
-      // Use new input if provided, else keep existing
-      const updatedProfileImage = profile_image.trim() !== "" ? profile_image : current.profile_image;
-      const updatedSecondaryEmail = secondary_email.trim() !== "" ? secondary_email : current.secondary_email;
+      const finalImage = profileImage || current.profile_image;
+      const finalEmail = secondary_email || current.secondary_email;
 
-      const updateQuery = `
-        UPDATE students 
-        SET profile_image = ?, secondary_email = ?
-        WHERE user_id = ?
-      `;
-      conn.query(updateQuery, [updatedProfileImage, updatedSecondaryEmail, userId], (err) => {
+      const updateQuery = `UPDATE students SET profile_image = ?, secondary_email = ? WHERE user_id = ?`;
+      conn.query(updateQuery, [finalImage, finalEmail, userId], (err) => {
         if (err) throw err;
         res.redirect("/student/profile");
       });
@@ -254,6 +307,7 @@ app.post("/student/profile/update", (req, res) => {
     res.redirect("/");
   }
 });
+
 
 
 
