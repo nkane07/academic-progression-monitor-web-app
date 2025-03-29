@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Send Message</title>
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+</head>
+<body>
+  <header>
+    <h2><i class="fas fa-paper-plane"></i> Send Message to Student</h2>
+    <nav>
+      <a href="/admin" class="button">Dashboard</a>
+      <a href="/logout" class="button">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <form action="/admin/messages/send" method="POST">
+      <label for="recipient_id">Select Student:</label>
+      <select name="recipient_id" required>
+        <% students.forEach(s => { %>
+          <option value="<%= s.user_id %>"><%= s.first_name %> <%= s.last_name %> (ID: <%= s.student_number %>)</option>
+        <% }) %>
+      </select>
+
+      <label for="subject">Subject:</label>
+      <input type="text" name="subject" required>
+
+      <label for="body">Message:</label>
+      <textarea name="body" rows="5" required></textarea>
+
+      <button type="submit"><i class="fas fa-paper-plane"></i> Send</button>
+    </form>
+  </main>
+</body>
+</html>

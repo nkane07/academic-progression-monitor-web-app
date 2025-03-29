@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Contact Advisor</title>
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+  <header>
+    <h2><i class="fas fa-paper-plane"></i> Contact Advisor</h2>
+    <nav>
+      <a href="/student/messages" class="button">Contact</a>
+      <a href="/student" class="button">Dashboard</a>
+      <a href="/logout" class="button">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <form action="/student/messages/contact" method="POST">
+      <label for="subject">Subject</label>
+      <input type="text" id="subject" name="subject" required>
+
+      <label for="body">Message</label>
+      <textarea id="body" name="body" rows="6" required></textarea>
+
+      <button type="submit"><i class="fas fa-paper-plane"></i> Send Message</button>
+    </form>
+  </main>
+
+  <footer>
+    <p>University Portal © <%= currentYear %></p>
+  </footer>
+</body>
+</html>

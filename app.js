@@ -318,22 +318,53 @@ app.get("/student/profile", (req, res) => {
 
 // Student Inbox
 app.get("/student/messages", (req, res) => {
-  if (req.session.userRole === "student") {
-    const userId = req.session.userId;
-    const query = `
-      SELECT m.message_id, m.subject, m.sent_at, m.is_read, u.username AS sender_name
+  if (req.session.userRole !== "student") return res.redirect("/");
+
+  const userId = req.session.userId;
+  const box = req.query.box || "inbox";
+  const search = req.query.search || "";
+  const searchLike = `%${search}%`;
+
+  let query, params;
+
+  if (box === "sent") {
+    query = `
+      SELECT m.message_id, m.subject, m.body, m.sent_at, m.is_read, u.username AS recipient_name
+      FROM messages m
+      JOIN users u ON m.recipient_id = u.user_id
+      WHERE m.sender_id = ?
+      AND (m.subject LIKE ? OR u.username LIKE ?)
+      ORDER BY m.sent_at DESC
+    `;
+    params = [userId, searchLike, searchLike];
+  } else {
+    query = `
+      SELECT m.message_id, m.subject, m.body, m.sent_at, m.is_read, u.username AS sender_name
       FROM messages m
       JOIN users u ON m.sender_id = u.user_id
       WHERE m.recipient_id = ?
+      AND (m.subject LIKE ? OR u.username LIKE ?)
       ORDER BY m.sent_at DESC
     `;
-    conn.query(query, [userId], (err, results) => {
-      if (err) throw err;
-      res.render("student_messages", { messages: results });
-    });
-  } else {
-    res.redirect("/");
+    params = [userId, searchLike, searchLike];
   }
+
+  conn.query(query, params, (err, results) => {
+    if (err) throw err;
+    res.render("student_messages", {
+      messages: results,
+      box,
+      search,
+      req
+    });
+  });
+});
+
+
+
+// Contact advisor form
+app.get("/student/messages/contact", (req, res) => {
+  res.render("student_compose_message");
 });
 
 // View specific message by ID
@@ -352,21 +383,96 @@ app.get("/student/messages/:id", (req, res) => {
     if (err) throw err;
     if (result.length === 0) return res.send("Message not found.");
 
-    // Mark message as read
+    const message = result[0];
+
     conn.query(`UPDATE messages SET is_read = 1 WHERE message_id = ?`, [messageId]);
 
-    res.render("student_view_message", {
-      message: result[0]
+    const repliesQuery = `
+      SELECT m.*, u.username AS sender_name
+      FROM messages m
+      JOIN users u ON m.sender_id = u.user_id
+      WHERE m.parent_message_id = ?
+      ORDER BY sent_at ASC
+    `;
+
+    conn.query(repliesQuery, [messageId], (err, replies) => {
+      if (err) throw err;
+
+      res.render("student_view_message", {
+        message,
+        replies
+      });
     });
   });
 });
 
-// Contact advisor form
-app.get("/student/messages/contact", (req, res) => {
-  res.render("student_compose_message");
+app.post("/student/messages/reply", (req, res) => {
+  const senderId = req.session.userId;
+  const { parent_id, body } = req.body;
+
+  const recipientQuery = `SELECT sender_id FROM messages WHERE message_id = ?`;
+
+  conn.query(recipientQuery, [parent_id], (err, results) => {
+    if (err) throw err;
+    if (results.length === 0) return res.send("Original message not found.");
+
+    const recipientId = results[0].sender_id;
+
+    const insertQuery = `
+      INSERT INTO messages (sender_id, recipient_id, subject, body, sent_at, is_read, parent_message_id)
+      VALUES (?, ?, 'Re: (reply)', ?, NOW(), 0, ?)
+    `;
+
+    conn.query(insertQuery, [senderId, recipientId, body, parent_id], (err) => {
+      if (err) throw err;
+      res.redirect("/student/messages/" + parent_id);
+    });
+  });
 });
 
+app.post("/student/messages/:id/delete", (req, res) => {
+  const messageId = req.params.id;
+  const userId = req.session.userId;
+
+  const deleteQuery = `
+    DELETE FROM messages
+    WHERE message_id = ? AND recipient_id = ?
+  `;
+
+  conn.query(deleteQuery, [messageId, userId], (err) => {
+    if (err) throw err;
+    res.redirect("/student/messages");
+  });
+});
+
+
 // Handle form
+app.post("/student/messages/contact", (req, res) => {
+  const userId = req.session.userId;
+  const { subject, body } = req.body;
+
+  const advisorQuery = "SELECT user_id FROM users WHERE role = 'advisor' LIMIT 1";
+
+  conn.query(advisorQuery, (err, results) => {
+    if (err) throw err;
+    if (results.length === 0) return res.send("Advisor not found.");
+
+    const advisorId = results[0].user_id;
+
+    const insertQuery = `
+      INSERT INTO messages (sender_id, recipient_id, subject, body, sent_at, is_read)
+      VALUES (?, ?, ?, ?, NOW(), 0)
+    `;
+
+    conn.query(insertQuery, [userId, advisorId, subject, body], (err) => {
+      if (err) throw err;
+      res.redirect("/student/messages?box=sent&sent=1");
+
+
+    });
+  });
+});
+
 
 
 
@@ -396,12 +502,6 @@ app.post("/student/profile/update", upload.single("profile_image"), (req, res) =
 });
 
 
-
-
-
-
- 
-
 // Admin dashboard (protected)
 app.get("/admin", (req, res) => {
   if (req.session.userRole === "admin") {
@@ -410,6 +510,41 @@ app.get("/admin", (req, res) => {
     res.redirect("/");
   }
 });
+
+app.get("/admin/messages/new", (req, res) => {
+  if (req.session.userRole !== "admin") return res.redirect("/");
+
+  const query = `
+    SELECT u.user_id, s.student_number, s.first_name, s.last_name
+    FROM users u
+    JOIN students s ON u.user_id = s.user_id
+    WHERE u.role = 'student'
+  `;
+
+  conn.query(query, (err, students) => {
+    if (err) throw err;
+
+    res.render("admin_send_message", { students });
+  });
+});
+
+app.post("/admin/messages/send", (req, res) => {
+  if (req.session.userRole !== "admin") return res.redirect("/");
+
+  const senderId = req.session.userId; // The admin
+  const { recipient_id, subject, body } = req.body;
+
+  const query = `
+    INSERT INTO messages (sender_id, recipient_id, subject, body, sent_at, is_read)
+    VALUES (?, ?, ?, ?, NOW(), 0)
+  `;
+
+  conn.query(query, [senderId, recipient_id, subject, body], (err) => {
+    if (err) throw err;
+    res.redirect("/admin?sent=1");
+  });
+});
+
 
 // Logout
 app.get("/logout", (req, res) => {
