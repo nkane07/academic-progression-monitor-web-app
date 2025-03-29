@@ -203,6 +203,40 @@ form[action="/student/messages"] input[type="text"] {
   position: relative;
 }
 
+  .admin-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+
+  .student-number-preview {
+    margin-top: 0.25rem;
+    font-weight: bold;
+    padding: 0.5rem;
+    background: #f2f2f2;
+    border-radius: 5px;
+    display: inline-block;
+  }
+  
+  .student-number-preview {
+    max-width: 300px;
+    text-align: center;
+  }
+  
+form select {
+  margin-bottom: 1rem;
+}
+
+.student-id-preview p {
+  padding: 0.5rem;
+  background-color: #f8f8f8;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: inherit;
+}
+
+
 
 /* smaller screens */
 @media screen and (max-width: 768px) {

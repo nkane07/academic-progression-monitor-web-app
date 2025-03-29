@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student Records</title>
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+</head>
+<body>
+  <header>
+    <h2>Student Management</h2>
+    <nav>
+        <a href="/admin/students/new" class="button">Add New Student</a>
+      <a href="/admin" class="button">Dashboard</a>
+      <a href="/logout" class="button">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <% if (req.query.deleted) { %>
+        <div id="deleteBanner" style="background:#f8d7da; color:#721c24; padding:1rem; margin-bottom:1rem; border-radius:5px;">
+          <i class="fas fa-check-circle"></i> Student record deleted successfully!
+        </div>
+      <% } %>
+
+      <% if (req.query.added) { %>
+        <div id="addBanner" style="background:#d4edda; color:#155724; padding:1rem; margin-bottom:1rem; border-radius:5px;">
+          <i class="fas fa-check-circle"></i> New student added successfully!
+        </div>
+      <% } %>
+      
+      
+    <h3>All Students</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Student Number</th>
+          <th>Pathway</th>
+          <th>Level / Year</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% students.forEach(s => { %>
+          <tr>
+            <td><%= s.first_name %> <%= s.last_name %></td>
+            <td><%= s.student_number %></td>
+            <td><%= s.pathway %></td>
+            <td><%= s.level %></td>
+            <td>
+              <a href="/admin/students/<%= s.user_id %>" class="button">Manage</a>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+      
+      
+    </table>
+  </main>
+  <script>
+    setTimeout(() => {
+      const banner = document.getElementById('deleteBanner');
+      if (banner) {
+        banner.style.transition = 'opacity 0.5s ease';
+        banner.style.opacity = '0';
+        setTimeout(() => banner.remove(), 500);
+      }
+    }, 4000);
+  </script>
+  <script>
+    setTimeout(() => {
+      const banner = document.getElementById('addBanner');
+      if (banner) {
+        banner.style.transition = 'opacity 0.5s ease';
+        banner.style.opacity = '0';
+        setTimeout(() => banner.remove(), 500); 
+      }
+    }, 4000); 
+  </script>
+  
+  
+</body>
+</html>

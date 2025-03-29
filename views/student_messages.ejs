@@ -26,6 +26,9 @@
   </header>
 
   <main>
+
+    
+    
     <div class="tab-buttons">
       <a href="/student/messages?box=inbox" class="button <%= box === 'inbox' ? 'active-tab' : '' %>">Inbox</a>
       <a href="/student/messages?box=sent" class="button <%= box === 'sent' ? 'active-tab' : '' %>">Sent</a>
@@ -74,7 +77,7 @@
             <th>Subject</th>
             <th><%= box === 'sent' ? 'To' : 'From' %></th>
             <th>Preview</th>
-            <th>Sent At</th>
+            <th>Received At</th>
           </tr>
         </thead>
         <tbody>
@@ -101,5 +104,8 @@
   <footer>
     <p>University Portal © <%= currentYear %></p>
   </footer>
+ 
+
+  
 </body>
 </html>

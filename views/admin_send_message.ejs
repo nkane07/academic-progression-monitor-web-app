@@ -15,12 +15,55 @@
 
   <main>
     <form action="/admin/messages/send" method="POST">
-      <label for="recipient_id">Select Student:</label>
-      <select name="recipient_id" required>
-        <% students.forEach(s => { %>
-          <option value="<%= s.user_id %>"><%= s.first_name %> <%= s.last_name %> (ID: <%= s.student_number %>)</option>
-        <% }) %>
-      </select>
+
+        
+
+        <% if (req.query.sent) { %>
+            <div id="successMessage" style="background: #d4edda; color: #155724; padding: 1rem; margin-bottom: 1rem; border-radius: 5px;">
+              <i class="fas fa-check-circle"></i> Message sent successfully!
+            </div>
+          <% } %>
+          
+          
+          
+          
+      <!-- Filter section -->
+      <fieldset>
+        <legend>Target Group</legend>
+
+        <label for="filter_type">Send to:</label>
+        <select name="filter_type" id="filter_type" required onchange="toggleStudentDropdown(this.value)">
+          <option value="individual">Individual Student</option>
+          <option value="group">Group (by pathway + year)</option>
+        </select>
+
+        <!-- Individual -->
+        <div id="studentSelect">
+          <label for="recipient_id">Select Student:</label>
+          <select name="recipient_id">
+            <% students.forEach(s => { %>
+              <option value="<%= s.user_id %>"><%= s.first_name %> <%= s.last_name %> (ID: <%= s.student_number %>)</option>
+            <% }) %>
+          </select>
+        </div>
+
+        <!-- Group -->
+        <div id="groupSelect" style="display: none;">
+          <label for="pathway">Pathway:</label>
+          <select name="pathway">
+            <option value="Information Systems">Information Systems</option>
+            <option value="Business Data Analytics">Business Data Analytics</option>
+            <!-- Add more pathways if needed -->
+          </select>
+
+          <label for="year">Year:</label>
+          <select name="year">
+            <option value="1">Year 1</option>
+            <option value="2">Year 2</option>
+            <option value="3">Year 3</option>
+          </select>
+        </div>
+      </fieldset>
 
       <label for="subject">Subject:</label>
       <input type="text" name="subject" required>
@@ -30,6 +73,29 @@
 
       <button type="submit"><i class="fas fa-paper-plane"></i> Send</button>
     </form>
+
+    <script>
+        setTimeout(() => {
+          const msg = document.getElementById('successMessage');
+          if (msg) {
+            msg.style.transition = 'opacity 0.5s ease';
+            msg.style.opacity = '0';
+            setTimeout(() => msg.remove(), 500); // Optional: remove from DOM after fading
+          }
+        }, 4000);
+      </script>
+      
+      
+
+    <script>
+      function toggleStudentDropdown(type) {
+        document.getElementById('studentSelect').style.display = (type === 'individual') ? 'block' : 'none';
+        document.getElementById('groupSelect').style.display = (type === 'group') ? 'block' : 'none';
+      }
+
+      // Auto-run toggle on page load in case it's returning from a post-back
+      window.onload = () => toggleStudentDropdown(document.getElementById('filter_type').value);
+    </script>
   </main>
 </body>
 </html>

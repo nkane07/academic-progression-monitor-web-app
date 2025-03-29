@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add New Student</title>
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header>
+    <h2>Add New Student</h2>
+    <nav>
+      <a href="/admin/students" class="button">Back</a>
+      <a href="/admin" class="button">Dashboard</a>
+      <a href="/logout" class="button">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <form action="/admin/students/new" method="POST">
+      <label for="first_name">First Name:</label>
+      <input type="text" name="first_name" required>
+
+      <label for="last_name">Last Name:</label>
+      <input type="text" name="last_name" required>
+
+      <label for="pathway">Pathway:</label>
+      <select name="pathway" required>
+        <option value="Information Systems">Information Systems</option>
+        <option value="Business Data Analytics">Business Data Analytics</option>
+      </select>
+
+      <div class="student-id-preview">
+        <label>Student Number (auto-generated to match current year and pathway):</label>
+        <p id="studentNumberPreview"></p>
+        <input type="hidden" name="student_number" id="studentNumberInput">
+      </div>
+
+      <label for="level">Level / Year:</label>
+      <select name="level" required>
+        <option value="Year 1">Year 1</option>
+        <option value="Year 2">Year 2</option>
+        <option value="Year 3">Year 3</option>
+      </select>
+
+      <button type="submit" class="button">Add Student</button>
+    </form>
+  </main>
+
+  <footer>
+    <p>University Portal © <%= currentYear %></p>
+  </footer>
+
+  <script>
+    function generateStudentNumber(pathway) {
+      const year = new Date().getFullYear().toString().slice(-2);
+      const randomDigits = Math.floor(100000 + Math.random() * 900000);
+      const codeMap = {
+        "Information Systems": "IFSY",
+        "Business Data Analytics": "BSAS"
+      };
+      const pathwayCode = codeMap[pathway] || "GEN";
+      return `${year}-${pathwayCode}-${randomDigits}`;
+    }
+
+    const pathwaySelect = document.querySelector('select[name="pathway"]');
+    const previewSpan = document.getElementById("studentNumberPreview");
+    const studentNumberInput = document.getElementById("studentNumberInput");
+
+    function updatePreview() {
+      const pathway = pathwaySelect.value;
+      const generatedNumber = generateStudentNumber(pathway);
+      previewSpan.textContent = generatedNumber;
+      studentNumberInput.value = generatedNumber;
+    }
+
+    pathwaySelect.addEventListener("change", updatePreview);
+    window.onload = updatePreview;
+  </script>
+</body>
+</html>

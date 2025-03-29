@@ -18,6 +18,13 @@
 
   <main>
     <form action="/student/messages/contact" method="POST">
+
+        <% if (req.query.sent) { %>
+            <div class="alert success">
+              <i class="fas fa-check-circle"></i> Message sent successfully!
+            </div>
+          <% } %>
+          
       <label for="subject">Subject</label>
       <input type="text" id="subject" name="subject" required>
 
@@ -26,6 +33,14 @@
 
       <button type="submit"><i class="fas fa-paper-plane"></i> Send Message</button>
     </form>
+
+    <script>
+        setTimeout(() => {
+          const alert = document.querySelector('.alert.success');
+          if (alert) alert.style.display = 'none';
+        }, 4000);
+      </script>
+      
   </main>
 
   <footer>

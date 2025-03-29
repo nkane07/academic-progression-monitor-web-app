@@ -17,6 +17,14 @@
   </header>
 
   <main>
+
+    <% if (req.query.replied) { %>
+      <div id="replySuccessMessage" style="background: #d4edda; color: #155724; padding: 1rem; margin-bottom: 1rem; border-radius: 5px;">
+        <i class="fas fa-check-circle"></i> Reply sent successfully!
+      </div>
+    <% } %>
+    
+    
     <section>
       <h3><%= message.subject %></h3>
       <p>
@@ -68,5 +76,17 @@
   <footer>
     <p>University Portal © <%= currentYear %></p>
   </footer>
+
+  <script>
+    setTimeout(() => {
+      const msg = document.getElementById('replySuccessMessage');
+      if (msg) {
+        msg.style.transition = 'opacity 0.5s ease';
+        msg.style.opacity = '0';
+        setTimeout(() => msg.remove(), 500);
+      }
+    }, 4000);
+  </script>
+  
 </body>
 </html>

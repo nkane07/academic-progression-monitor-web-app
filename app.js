@@ -18,7 +18,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-
 const conn = mysql.createPool({
   host: "localhost",
   user: "root",
@@ -31,7 +30,16 @@ app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
+// Middleware to check user role
+function requireStudent(req, res, next) {
+  if (req.session.userRole !== "student") return res.redirect("/");
+  next();
+}
 
+function requireAdmin(req, res, next) {
+  if (req.session.userRole !== "admin") return res.redirect("/");
+  next();
+}
 
 // Global year middleware
 app.use((req, res, next) => {
@@ -54,7 +62,7 @@ app.get("/", (req, res) => {
 });
 
 // Handle login form submission
-const bcrypt = require('bcrypt'); // Add this at the top with other requires
+const bcrypt = require("bcrypt");
 
 app.post("/login", (req, res) => {
   const username = req.body.userField;
@@ -73,18 +81,13 @@ app.post("/login", (req, res) => {
           req.session.userId = user.user_id;
           req.session.userRole = user.role;
 
-          // IF STUDENT, FETCH THEIR NAME FROM STUDENTS TABLE
           if (user.role === "student") {
             const studentQuery = "SELECT first_name, last_name FROM students WHERE user_id = ?";
             conn.query(studentQuery, [user.user_id], (err, studentResult) => {
               if (err) throw err;
-
-              if (studentResult.length > 0) {
-                req.session.studentName = `${studentResult[0].first_name} ${studentResult[0].last_name}`;
-              } else {
-                req.session.studentName = 'Student';
-              }
-
+              req.session.studentName = studentResult.length > 0
+                ? `${studentResult[0].first_name} ${studentResult[0].last_name}`
+                : "Student";
               res.redirect("/student");
             });
           } else if (user.role === "admin") {
@@ -100,34 +103,20 @@ app.post("/login", (req, res) => {
   });
 });
 
-
-
-// Student dashboard (protected)
-app.get("/student", (req, res) => {
-  if (req.session.userRole === "student") {
-    const studentName = req.session.studentName || 'Student';
-    res.render("student_dashboard", { studentName: studentName });
-  } else {
-    res.redirect("/");
-  }
+// Student dashboard
+app.get("/student", requireStudent, (req, res) => {
+  const studentName = req.session.studentName || "Student";
+  res.render("student_dashboard", { studentName });
 });
 
-
-// Admin dashboard (protected)
-app.get("/admin", (req, res) => {
-  if (req.session.userRole === "admin") {
-    res.render("admin_dashboard");
-  } else {
-    res.redirect("/");
-  }
+// Admin dashboard
+app.get("/admin", requireAdmin, (req, res) => {
+  res.render("admin_dashboard");
 });
 
-
-app.get("/student/records", (req, res) => {
-  if (req.session.userRole !== "student") return res.redirect("/");
-
+// Student records
+app.get("/student/records", requireStudent, (req, res) => {
   const userId = req.session.userId;
-
   const studentQuery = `SELECT student_number, pathway FROM students WHERE user_id = ?`;
 
   conn.query(studentQuery, [userId], (err, studentResult) => {
@@ -162,7 +151,6 @@ app.get("/student/records", (req, res) => {
         'BSAS-102','BSAS-109','BSAS-112','BSAS-113','IFSY-124','FINA-107'
       ];
 
-      // Count credits and collect data
       const attemptTracker = {};
 
       records.forEach(record => {
@@ -181,7 +169,6 @@ app.get("/student/records", (req, res) => {
           gradedModules++;
         }
 
-        // Track failed attempts per module
         if (['fail', 'absent'].includes(record.grade_result)) {
           attemptTracker[modCode] = (attemptTracker[modCode] || 0) + 1;
           resitModules.push(record.module_name);
@@ -193,7 +180,6 @@ app.get("/student/records", (req, res) => {
         }
       });
 
-      // Determine estimated current year based on total credits
       let requiredCredits, currentLevel, currentLevelLabel;
       if (totalCredits >= 240) {
         requiredCredits = 360;
@@ -209,7 +195,6 @@ app.get("/student/records", (req, res) => {
         currentLevelLabel = 'Year 1';
       }
 
-      // Core module check
       const coreModules = (pathway === 'Information Systems' && currentLevel === 'L2') ? ['IFSY-259', 'IFSY-240']
                        : (pathway === 'Business Data Analytics' && currentLevel === 'L2') ? ['IFSY-257']
                        : [];
@@ -222,31 +207,20 @@ app.get("/student/records", (req, res) => {
 
       const averageGrade = gradedModules ? (totalGrade / gradedModules).toFixed(2) : 0;
 
-      // Determine final decision
+      let decision = "";
       if (currentLevelLabel === 'Year 3') {
         decision = "Progress to Final Year";
       } else {
         const nextYearNum = parseInt(currentLevelLabel.split(" ")[1]) + 1;
         decision = `Progress to Year ${nextYearNum}`;
       }
-      
 
-      if (totalCredits < 100 || averageGrade < 40) {
-        decision = "Resit Required or Contact Advisor";
+      if (totalCredits < 100 || averageGrade < 40) decision = "Resit Required or Contact Advisor";
+      if (coreFails > 0) decision = "Failed Core Module - Contact Advisor";
+      if ((currentLevel === 'L2' || currentLevel === 'L3') && level1Credits < 120) {
+        decision = "Incomplete Year 1 Modules - Cannot Progress";
       }
-
-      if (coreFails > 0) {
-        decision = "Failed Core Module - Contact Advisor";
-      }
-
-      if (currentLevel === 'L2' || currentLevel === 'L3') {
-        if (level1Credits < 120) {
-          decision = "Incomplete Year 1 Modules - Cannot Progress";
-        }
-      }
-
-      const exceededAttempts = Object.entries(attemptTracker).filter(([_, count]) => count >= 4);
-      if (exceededAttempts.length > 0) {
+      if (Object.entries(attemptTracker).filter(([_, count]) => count >= 4).length > 0) {
         decision = "Exceeded Max Attempts - Contact Advisor";
       }
 
@@ -264,62 +238,49 @@ app.get("/student/records", (req, res) => {
   });
 });
 
+// Student profile
+app.get("/student/profile", requireStudent, (req, res) => {
+  const userId = req.session.userId;
 
+  const studentQuery = `SELECT * FROM students WHERE user_id = ?`;
+  conn.query(studentQuery, [userId], (err, studentResult) => {
+    if (err) throw err;
+    if (studentResult.length === 0) return res.send("Student not found.");
 
+    const student = studentResult[0];
 
-app.get("/student/profile", (req, res) => {
-  if (req.session.userRole === "student") {
-    const userId = req.session.userId;
+    const creditsQuery = `
+      SELECT SUM(credits_earned) AS total_credits 
+      FROM enrollment 
+      WHERE student_id = ? AND grade_result IN ('pass', 'pass capped')
+    `;
 
-    const studentQuery = `SELECT * FROM students WHERE user_id = ?`;
-    conn.query(studentQuery, [userId], (err, studentResult) => {
+    conn.query(creditsQuery, [student.student_number], (err, creditResult) => {
       if (err) throw err;
-      if (studentResult.length === 0) return res.send("Student not found.");
 
-      const student = studentResult[0];
+      const totalCredits = creditResult[0].total_credits || 0;
+      let currentLevel = "Year 1";
+      let currentYearDisplay = 1;
 
-      // Logic to calculate current year based on credits
-      const creditsQuery = `
-        SELECT SUM(credits_earned) AS total_credits 
-        FROM enrollment 
-        WHERE student_id = ? AND grade_result IN ('pass', 'pass capped')
-      `;
+      if (totalCredits >= 240) {
+        currentLevel = "Year 3";
+        currentYearDisplay = 3;
+      } else if (totalCredits >= 120) {
+        currentLevel = "Year 2";
+        currentYearDisplay = 2;
+      }
 
-      conn.query(creditsQuery, [student.student_number], (err, creditResult) => {
-        if (err) throw err;
-
-        const totalCredits = creditResult[0].total_credits || 0;
-
-        let currentLevel = "Year 1";
-        let currentYearDisplay = 1;
-
-        if (totalCredits >= 240) {
-          currentLevel = "Year 3";
-          currentYearDisplay = 3;
-        } else if (totalCredits >= 120) {
-          currentLevel = "Year 2";
-          currentYearDisplay = 2;
-        }
-
-        res.render("student_profile", {
-          student: {
-            ...student,
-            current_level: currentLevel
-          },
-          currentYearDisplay,
-          cleared: req.query.cleared
-        });
+      res.render("student_profile", {
+        student: { ...student, current_level: currentLevel },
+        currentYearDisplay,
+        cleared: req.query.cleared
       });
     });
-  } else {
-    res.redirect("/");
-  }
+  });
 });
 
-// Student Inbox
-app.get("/student/messages", (req, res) => {
-  if (req.session.userRole !== "student") return res.redirect("/");
-
+// Student messages
+app.get("/student/messages", requireStudent, (req, res) => {
   const userId = req.session.userId;
   const box = req.query.box || "inbox";
   const search = req.query.search || "";
@@ -360,15 +321,12 @@ app.get("/student/messages", (req, res) => {
   });
 });
 
+app.get("/student/messages/contact", requireStudent, (req, res) => {
+  res.render("student_compose_message", { req });
 
-
-// Contact advisor form
-app.get("/student/messages/contact", (req, res) => {
-  res.render("student_compose_message");
 });
 
-// View specific message by ID
-app.get("/student/messages/:id", (req, res) => {
+app.get("/student/messages/:id", requireStudent, (req, res) => {
   const userId = req.session.userId;
   const messageId = req.params.id;
 
@@ -376,16 +334,18 @@ app.get("/student/messages/:id", (req, res) => {
     SELECT m.*, u.username AS sender_name 
     FROM messages m 
     JOIN users u ON m.sender_id = u.user_id 
-    WHERE m.recipient_id = ? AND m.message_id = ?
+    WHERE (m.recipient_id = ? OR m.sender_id = ?) AND m.message_id = ?
   `;
 
-  conn.query(messageQuery, [userId, messageId], (err, result) => {
+  conn.query(messageQuery, [userId, userId, messageId], (err, result) => {
     if (err) throw err;
     if (result.length === 0) return res.send("Message not found.");
 
     const message = result[0];
 
-    conn.query(`UPDATE messages SET is_read = 1 WHERE message_id = ?`, [messageId]);
+    if (message.recipient_id === userId) {
+      conn.query(`UPDATE messages SET is_read = 1 WHERE message_id = ?`, [messageId]);
+    }
 
     const repliesQuery = `
       SELECT m.*, u.username AS sender_name
@@ -400,13 +360,15 @@ app.get("/student/messages/:id", (req, res) => {
 
       res.render("student_view_message", {
         message,
-        replies
+        replies,
+        req
       });
     });
   });
 });
 
-app.post("/student/messages/reply", (req, res) => {
+
+app.post("/student/messages/reply", requireStudent, (req, res) => {
   const senderId = req.session.userId;
   const { parent_id, body } = req.body;
 
@@ -425,12 +387,12 @@ app.post("/student/messages/reply", (req, res) => {
 
     conn.query(insertQuery, [senderId, recipientId, body, parent_id], (err) => {
       if (err) throw err;
-      res.redirect("/student/messages/" + parent_id);
+      res.redirect("/student/messages/" + parent_id + "?reply_sent=1");
     });
   });
 });
 
-app.post("/student/messages/:id/delete", (req, res) => {
+app.post("/student/messages/:id/delete", requireStudent, (req, res) => {
   const messageId = req.params.id;
   const userId = req.session.userId;
 
@@ -445,13 +407,11 @@ app.post("/student/messages/:id/delete", (req, res) => {
   });
 });
 
-
-// Handle form
-app.post("/student/messages/contact", (req, res) => {
+app.post("/student/messages/contact", requireStudent, (req, res) => {
   const userId = req.session.userId;
   const { subject, body } = req.body;
+  const advisorQuery = "SELECT user_id FROM users WHERE username = 'admin2' LIMIT 1";
 
-  const advisorQuery = "SELECT user_id FROM users WHERE role = 'advisor' LIMIT 1";
 
   conn.query(advisorQuery, (err, results) => {
     if (err) throw err;
@@ -466,54 +426,35 @@ app.post("/student/messages/contact", (req, res) => {
 
     conn.query(insertQuery, [userId, advisorId, subject, body], (err) => {
       if (err) throw err;
-      res.redirect("/student/messages?box=sent&sent=1");
-
+      res.redirect("/student/messages/contact?sent=1");
 
     });
   });
 });
 
+// Profile update
+app.post("/student/profile/update", requireStudent, upload.single("profile_image"), (req, res) => {
+  const userId = req.session.userId;
+  const { secondary_email } = req.body;
+  const profileImage = req.file ? `/uploads/${req.file.filename}` : null;
 
+  const selectQuery = `SELECT profile_image, secondary_email FROM students WHERE user_id = ?`;
+  conn.query(selectQuery, [userId], (err, results) => {
+    if (err) throw err;
+    const current = results[0];
+    const finalImage = profileImage || current.profile_image;
+    const finalEmail = secondary_email || current.secondary_email;
 
-
-// Profile Update Route 
-app.post("/student/profile/update", upload.single("profile_image"), (req, res) => {
-  if (req.session.userRole === "student") {
-    const userId = req.session.userId;
-    const { secondary_email } = req.body;
-    const profileImage = req.file ? `/uploads/${req.file.filename}` : null;
-
-    const selectQuery = `SELECT profile_image, secondary_email FROM students WHERE user_id = ?`;
-    conn.query(selectQuery, [userId], (err, results) => {
+    const updateQuery = `UPDATE students SET profile_image = ?, secondary_email = ? WHERE user_id = ?`;
+    conn.query(updateQuery, [finalImage, finalEmail, userId], (err) => {
       if (err) throw err;
-      const current = results[0];
-      const finalImage = profileImage || current.profile_image;
-      const finalEmail = secondary_email || current.secondary_email;
-
-      const updateQuery = `UPDATE students SET profile_image = ?, secondary_email = ? WHERE user_id = ?`;
-      conn.query(updateQuery, [finalImage, finalEmail, userId], (err) => {
-        if (err) throw err;
-        res.redirect("/student/profile");
-      });
+      res.redirect("/student/profile");
     });
-  } else {
-    res.redirect("/");
-  }
+  });
 });
 
-
-// Admin dashboard (protected)
-app.get("/admin", (req, res) => {
-  if (req.session.userRole === "admin") {
-    res.render("admin_dashboard");
-  } else {
-    res.redirect("/");
-  }
-});
-
-app.get("/admin/messages/new", (req, res) => {
-  if (req.session.userRole !== "admin") return res.redirect("/");
-
+// Admin send messages
+app.get("/admin/messages/new", requireAdmin, (req, res) => {
   const query = `
     SELECT u.user_id, s.student_number, s.first_name, s.last_name
     FROM users u
@@ -523,27 +464,202 @@ app.get("/admin/messages/new", (req, res) => {
 
   conn.query(query, (err, students) => {
     if (err) throw err;
-
-    res.render("admin_send_message", { students });
+    res.render("admin_send_message", { students, req });
   });
 });
 
-app.post("/admin/messages/send", (req, res) => {
-  if (req.session.userRole !== "admin") return res.redirect("/");
+app.post("/admin/messages/send", requireAdmin, (req, res) => {
+  const senderId = req.session.userId;
+  const { filter_type, recipient_id, subject, body, pathway, year } = req.body;
 
-  const senderId = req.session.userId; // The admin
-  const { recipient_id, subject, body } = req.body;
+  if (filter_type === "individual") {
+    const query = `
+      INSERT INTO messages (sender_id, recipient_id, subject, body, sent_at, is_read)
+      VALUES (?, ?, ?, ?, NOW(), 0)
+    `;
+    conn.query(query, [senderId, recipient_id, subject, body], (err) => {
+      if (err) throw err;
+      res.redirect("/admin/messages/new?sent=1");
 
+    });
+
+  } else if (filter_type === "group") {
+    const level = parseInt(year);
+
+    const groupQuery = `
+      SELECT u.user_id
+      FROM users u
+      JOIN students s ON u.user_id = s.user_id
+      JOIN (
+        SELECT student_id, SUM(credits_earned) AS total_credits
+        FROM enrollment
+        WHERE grade_result IN ('pass', 'pass capped')
+        GROUP BY student_id
+      ) AS totals ON s.student_number = totals.student_id
+      WHERE u.role = 'student'
+        AND s.pathway = ?
+        AND (
+          (? = 1 AND totals.total_credits < 120) OR
+          (? = 2 AND totals.total_credits >= 120 AND totals.total_credits < 240) OR
+          (? = 3 AND totals.total_credits >= 240)
+        )
+    `;
+
+    conn.query(groupQuery, [pathway, level, level, level], (err, students) => {
+      if (err) throw err;
+      if (students.length === 0) return res.send("No matching students found.");
+
+      const values = students.map(s => [senderId, s.user_id, subject, body, new Date(), 0]);
+      const insertQuery = `
+        INSERT INTO messages (sender_id, recipient_id, subject, body, sent_at, is_read)
+        VALUES ?
+      `;
+
+      conn.query(insertQuery, [values], (err) => {
+        if (err) throw err;
+        res.redirect("/admin?sent=1");
+      });
+    });
+  }
+});
+
+app.get("/admin/students", requireAdmin, (req, res) => {
   const query = `
-    INSERT INTO messages (sender_id, recipient_id, subject, body, sent_at, is_read)
-    VALUES (?, ?, ?, ?, NOW(), 0)
+    SELECT 
+      s.student_number,
+      s.first_name,
+      s.last_name,
+      s.pathway,
+      s.user_id,
+      s.current_year,
+      SUM(e.credits_earned) AS total_credits
+    FROM students s
+    LEFT JOIN enrollment e ON s.student_number = e.student_id
+    GROUP BY s.student_number
   `;
 
-  conn.query(query, [senderId, recipient_id, subject, body], (err) => {
+  conn.query(query, (err, results) => {
     if (err) throw err;
-    res.redirect("/admin?sent=1");
+
+    const students = results.map(s => {
+      const level = s.current_year || "Year 1"; // Use what's in the DB or default
+      return { ...s, level };
+    });
+
+    res.render("admin_students", { students, req });
   });
 });
+
+
+app.get("/admin/students/new", requireAdmin, (req, res) => {
+  // Default to Information Systems
+  const year = new Date().getFullYear().toString().slice(-2); // e.g. '25'
+  const prefix = "IFSY";
+  const randomNum = Math.floor(100000 + Math.random() * 900000); // 6-digit number
+  const studentNumber = `${year}-${prefix}-${randomNum}`;
+
+  res.render("admin_add_student", { req, studentNumber });
+});
+
+
+app.post("/admin/students/new", requireAdmin, (req, res) => {
+  const { first_name, last_name, pathway, level } = req.body;
+
+  // Define pathway shortcodes
+  const pathwayCodes = {
+    "Information Systems": "IFSY", 
+    "Business Data Analytics": "BSAS"
+  };
+
+  // Generate student number
+  const yearPrefix = new Date().getFullYear().toString().slice(-2); // e.g. '25'
+  const pathwayCode = pathwayCodes[pathway] || "GEN";
+  const randomDigits = Math.floor(100000 + Math.random() * 900000); // 6 digits
+  const student_number = `${yearPrefix}-${pathwayCode}-${randomDigits}`;
+
+  // Default login password
+  const defaultPassword = "studentpass";
+  const bcrypt = require("bcrypt");
+
+  // Insert into `users` table
+  const userQuery = `
+    INSERT INTO users (username, password_hash, role)
+    VALUES (?, ?, 'student')
+  `;
+
+  bcrypt.hash(defaultPassword, 10, (err, hash) => {
+    if (err) throw err;
+
+    conn.query(userQuery, [student_number, hash], (err, userResult) => {
+      if (err) throw err;
+
+      const userId = userResult.insertId;
+
+      const studentQuery = `
+        INSERT INTO students (user_id, student_number, first_name, last_name, pathway, current_year)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `;
+
+      conn.query(studentQuery, [userId, student_number, first_name, last_name, pathway, level], (err) => {
+        if (err) throw err;
+        res.redirect("/admin/students?added=1");
+      });
+    });
+  });
+});
+
+
+
+app.get("/admin/students/:id", requireAdmin, (req, res) => {
+  const userId = req.params.id;
+
+  const query = `
+    SELECT s.*, u.username 
+    FROM students s
+    JOIN users u ON u.user_id = s.user_id
+    WHERE s.user_id = ?
+  `;
+
+  conn.query(query, [userId], (err, result) => {
+    if (err) throw err;
+    if (result.length === 0) return res.send("Student not found.");
+
+    const student = result[0];
+    res.render("admin_manage_student", { student, req });
+  });
+});
+
+
+app.post("/admin/students/:id/delete", requireAdmin, (req, res) => {
+  const userId = req.params.id;
+  const query = "DELETE FROM students WHERE user_id = ?";
+  conn.query(query, [userId], (err) => {
+    if (err) throw err;
+    res.redirect("/admin/students?deleted=1"); 
+  });
+});
+
+
+app.post("/admin/students/:id/update", requireAdmin, (req, res) => {
+  const userId = req.params.id;
+  const { first_name, last_name, student_number, pathway, current_year } = req.body;
+
+  const query = `
+    UPDATE students 
+    SET first_name = ?, last_name = ?, student_number = ?, pathway = ?, current_year = ? 
+    WHERE user_id = ?
+  `;
+
+  conn.query(query, [first_name, last_name, student_number, pathway, current_year, userId], (err) => {
+    if (err) throw err;
+    res.redirect("/admin/students/" + userId + "?updated=1");
+  });
+});
+
+
+
+
+
 
 
 // Logout
@@ -552,8 +668,14 @@ app.get("/logout", (req, res) => {
   res.redirect("/");
 });
 
-
 // Start the server
 app.listen(3000, () => {
-  console.log(`Server running at http://localhost:3000`);
+  console.log("Server running at http://localhost:3000");
 });
+
+
+// 404 fallback
+app.use((req, res) => {
+  res.status(404).send("404 - Page not found");
+});
+ 
