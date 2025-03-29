@@ -236,6 +236,58 @@ form select {
   font-family: inherit;
 }
 
+.page-label {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #004080;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+.pagination .page-button.active {
+  background-color: #004080 !important;
+  color: white !important;
+  font-weight: bold;
+}
+
+
+.page-button {
+  padding: 0.5rem 0.75rem;
+  min-width: 2.5rem; 
+  text-align: center;
+  text-decoration: none;
+  background-color: white;
+  border: 1px solid #004080;
+  border-radius: 4px;
+  color: #004080;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+
+.page-button:hover {
+  background-color: #e6f0ff;
+}
+
+.page-button.active {
+  background-color: black;
+  color: white;
+  font-weight: bold;
+  border-color: black;
+  pointer-events: none; 
+}
+
+
+
+
 
 
 /* smaller screens */

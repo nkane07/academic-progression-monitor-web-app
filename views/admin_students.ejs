@@ -3,6 +3,8 @@
 <head>
   <title>Student Records</title>
   <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+  <link rel="stylesheet" href="/styles.css">
+
 </head>
 <body>
   <header>
@@ -55,6 +57,30 @@
       
       
     </table>
+
+    <p class="page-label">Page <%= currentPage %> of <%= totalPages %></p>
+
+
+    <div class="pagination">
+        <% if (currentPage > 1) { %>
+          <a href="/admin/students?page=<%= currentPage - 1 %>" class="page-button">Previous</a>
+        <% } %>
+      
+        <% for (let i = 1; i <= totalPages; i++) { %>
+          <a 
+            href="/admin/students?page=<%= i %>" 
+            class="page-button <%= i === currentPage ? ' active' : '' %>"
+          >
+            <%= i %>
+          </a>
+        <% } %>
+      
+        <% if (currentPage < totalPages) { %>
+          <a href="/admin/students?page=<%= currentPage + 1 %>" class="page-button">Next</a>
+        <% } %>
+      </div>
+      
+      
   </main>
   <script>
     setTimeout(() => {

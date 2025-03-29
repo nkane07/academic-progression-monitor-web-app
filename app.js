@@ -524,6 +524,10 @@ app.post("/admin/messages/send", requireAdmin, (req, res) => {
 });
 
 app.get("/admin/students", requireAdmin, (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
   const query = `
     SELECT 
       s.student_number,
@@ -531,24 +535,46 @@ app.get("/admin/students", requireAdmin, (req, res) => {
       s.last_name,
       s.pathway,
       s.user_id,
-      s.current_year,
       SUM(e.credits_earned) AS total_credits
     FROM students s
     LEFT JOIN enrollment e ON s.student_number = e.student_id
     GROUP BY s.student_number
+    LIMIT ? OFFSET ?
   `;
 
-  conn.query(query, (err, results) => {
+  conn.query(query, [limit, offset], (err, results) => {
     if (err) throw err;
 
     const students = results.map(s => {
-      const level = s.current_year || "Year 1"; // Use what's in the DB or default
-      return { ...s, level };
+      let level = "Year 1";
+      if (s.total_credits >= 240) level = "Year 3";
+      else if (s.total_credits >= 120) level = "Year 2";
+
+      return {
+        ...s,
+        level
+      };
     });
 
-    res.render("admin_students", { students, req });
+    // Get total count for pagination
+    const countQuery = `SELECT COUNT(*) AS count FROM students`;
+    conn.query(countQuery, (err, countResult) => {
+      if (err) throw err;
+
+      const totalStudents = countResult[0].count;
+      const totalPages = Math.ceil(totalStudents / limit);
+
+      res.render("admin_students", {
+        students,
+        req,
+        currentPage: page,
+        totalPages
+      });
+    });
   });
 });
+
+
 
 
 app.get("/admin/students/new", requireAdmin, (req, res) => {
