@@ -14,30 +14,32 @@
 
     </nav>
   </header>
-
+  <main class="container">
+    <h2>Welcome, <%= studentName %></h2>
+    
+    <div class="dashboard-grid">
+      <a href="/student/profile" class="dashboard-tile">
+        <img src="/icons/profile.png" alt="Profile">
+        <h4>My Personal Profile</h4>
+      </a>
   
-    <main class="container">
-      <h2>Welcome, <%= studentName %></h2>
-      
-      <div class="dashboard-grid">
-        <a href="/student/profile" class="dashboard-tile">
-          <img src="/icons/profile.png" alt="Profile">
-          <h4>Personal Details</h4>
-        </a>
-        <a href="/student/grades" class="dashboard-tile">
-          <img src="/icons/grades.png" alt="Grades">
-          <h4>Academic Record</h4>
-        </a>
-        <a href="/student/progression" class="dashboard-tile">
-          <img src="/icons/progression.png" alt="Progression">
-          <h4>Progression Status</h4>
-        </a>
-        <a href="/student/messages" class="dashboard-tile">
-          <img src="/icons/messages.png" alt="Messages">
-          <h4>Messages</h4>
-        </a>
-      </div>
-    </main>
+      <a href="/student/grades" class="dashboard-tile">
+        <img src="/icons/grades.png" alt="Grades">
+        <h4>My Academic Records</h4>
+      </a>
+  
+      <a href="/student/progression" class="dashboard-tile">
+        <img src="/icons/progression.png" alt="Progression">
+        <h4>My Progression Status</h4>
+      </a>
+  
+      <a href="/student/messages" class="dashboard-tile">
+        <img src="/icons/messages.png" alt="Messages">
+        <h4>My Messages</h4>
+      </a>
+    </div>
+  </main>
+  
     
 
   </main>

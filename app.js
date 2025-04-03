@@ -131,14 +131,13 @@ app.get("/admin", requireAdmin, (req, res) => {
   res.render("admin_dashboard");
 });
 
-// Student records
-app.get("/student/records", requireStudent, (req, res) => {
-  const userId = req.session.userId;
+// Utility function to reuse student academic logic
+function getStudentAcademicData(userId, callback) {
   const studentQuery = `SELECT student_number, pathway FROM students WHERE user_id = ?`;
 
   conn.query(studentQuery, [userId], (err, studentResult) => {
-    if (err) throw err;
-    if (studentResult.length === 0) return res.send("Student not found.");
+    if (err) return callback(err);
+    if (studentResult.length === 0) return callback(null, null);
 
     const { student_number, pathway } = studentResult[0];
 
@@ -158,7 +157,7 @@ app.get("/student/records", requireStudent, (req, res) => {
     `;
 
     conn.query(recordsQuery, [student_number], (err, records) => {
-      if (err) throw err;
+      if (err) return callback(err);
 
       let totalCredits = 0, totalGrade = 0, gradedModules = 0;
       let failedModules = [], resitModules = [], coreFails = 0;
@@ -213,8 +212,8 @@ app.get("/student/records", requireStudent, (req, res) => {
       }
 
       const coreModules = (pathway === 'Information Systems' && currentLevel === 'L2') ? ['IFSY-259', 'IFSY-240']
-                       : (pathway === 'Business Data Analytics' && currentLevel === 'L2') ? ['IFSY-257']
-                       : [];
+                        : (pathway === 'Business Data Analytics' && currentLevel === 'L2') ? ['IFSY-257']
+                        : [];
 
       records.forEach(record => {
         if (coreModules.includes(record.module_code) && ['fail', 'absent'].includes(record.grade_result)) {
@@ -241,7 +240,7 @@ app.get("/student/records", requireStudent, (req, res) => {
         decision = "Exceeded Max Attempts - Contact Advisor";
       }
 
-      res.render("student_records", {
+      callback(null, {
         records,
         totalCredits,
         requiredCredits,
@@ -253,7 +252,42 @@ app.get("/student/records", requireStudent, (req, res) => {
       });
     });
   });
+}
+
+app.get("/student/grades", requireStudent, (req, res) => {
+  const userId = req.session.userId;
+
+  getStudentAcademicData(userId, (err, data) => {
+    if (err) throw err;
+    if (!data) return res.send("Student not found.");
+
+    res.render("student_grades", {
+      records: data.records,
+      currentYear: new Date().getFullYear()
+    });
+  });
 });
+
+app.get("/student/progression", requireStudent, (req, res) => {
+  const userId = req.session.userId;
+
+  getStudentAcademicData(userId, (err, data) => {
+    if (err) throw err;
+    if (!data) return res.send("Student not found.");
+
+    res.render("student_progression", {
+      totalCredits: data.totalCredits,
+      requiredCredits: data.requiredCredits,
+      averageGrade: data.averageGrade,
+      failedModules: data.failedModules,
+      resitModules: data.resitModules,
+      decision: data.decision,
+      currentLevel: data.currentLevel,
+      currentYear: new Date().getFullYear()
+    });
+  });
+});
+
 
 // Student profile
 app.get("/student/profile", requireStudent, (req, res) => {
