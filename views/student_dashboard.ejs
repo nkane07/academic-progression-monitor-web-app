@@ -2,26 +2,43 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width" />
-  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+  <link rel="stylesheet" href="/styles.css" />
   <title>Student Dashboard</title>
 </head>
 <body>
   <header>
     <h3>Student Dashboard</h3>
     <nav>
-      <a href="/logout">Logout</a>
+      <a href="/logout" class="button">Logout</a>
+
+
     </nav>
   </header>
 
-  <main>
-    <h2>Welcome, <%= studentName %>!</h2>
-
-    <p>Here you can view your personal profile, academic progress and modules and send and receive messages.</p>
-    <a href="/student/profile" class="button"><i class="fas fa-user"></i> Personal Profile</a>
-<a href="/student/records" class="button"><i class="fas fa-list"></i> Academic Records</a>
-<a href="/student/messages" class="button"><i class="fas fa-envelope"></i> Contact</a>
-<a href="/logout" class="button"><i class="fas fa-sign-out-alt"></i> Logout</a>
-
+  
+    <main class="container">
+      <h2>Welcome, <%= studentName %></h2>
+      
+      <div class="dashboard-grid">
+        <a href="/student/profile" class="dashboard-tile">
+          <img src="/icons/profile.png" alt="Profile">
+          <h4>Personal Details</h4>
+        </a>
+        <a href="/student/grades" class="dashboard-tile">
+          <img src="/icons/grades.png" alt="Grades">
+          <h4>Academic Record</h4>
+        </a>
+        <a href="/student/progression" class="dashboard-tile">
+          <img src="/icons/progression.png" alt="Progression">
+          <h4>Progression Status</h4>
+        </a>
+        <a href="/student/messages" class="dashboard-tile">
+          <img src="/icons/messages.png" alt="Messages">
+          <h4>Messages</h4>
+        </a>
+      </div>
+    </main>
+    
 
   </main>
 

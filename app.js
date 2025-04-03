@@ -4,11 +4,13 @@ const mysql = require("mysql2");
 const session = require("express-session");
 const path = require("path");
 const multer = require("multer");
+const fs = require("fs");
+const csv = require("csv-parser");
 
 // Set up Multer storage for profile images
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "public/uploads"); // Folder must exist
+    cb(null, "public/uploads");
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + path.extname(file.originalname);
@@ -17,6 +19,21 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
+
+//multer for csv files - admin
+const csvStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/uploads/csv");
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + path.extname(file.originalname);
+    cb(null, file.fieldname + "-" + uniqueSuffix);
+  },
+});
+
+const uploadCSV = multer({ storage: csvStorage });
+
+
 
 const conn = mysql.createPool({
   host: "localhost",
@@ -682,10 +699,142 @@ app.post("/admin/students/:id/update", requireAdmin, (req, res) => {
   });
 });
 
+app.get("/admin/grades", requireAdmin, (req, res) => {
+  const search = req.query.search || "";
+  const likeSearch = `%${search}%`;
+
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
+  const query = `
+    SELECT e.enrollment_id, e.student_id, e.module_code, e.grade, e.grade_result, e.credits_earned,
+           s.first_name, s.last_name
+    FROM enrollment e
+    LEFT JOIN students s ON e.student_id = s.student_number
+    WHERE 
+      e.student_id LIKE ? 
+      OR e.module_code LIKE ? 
+      OR s.first_name LIKE ? 
+      OR s.last_name LIKE ?
+    ORDER BY e.enrollment_id DESC
+    LIMIT ? OFFSET ?
+  `;
+
+  const countQuery = `
+    SELECT COUNT(*) AS total
+    FROM enrollment e
+    LEFT JOIN students s ON e.student_id = s.student_number
+    WHERE 
+      e.student_id LIKE ? 
+      OR e.module_code LIKE ? 
+      OR s.first_name LIKE ? 
+      OR s.last_name LIKE ?
+  `;
+
+  conn.query(query, [likeSearch, likeSearch, likeSearch, likeSearch, limit, offset], (err, grades) => {
+    if (err) throw err;
+
+    conn.query(countQuery, [likeSearch, likeSearch, likeSearch, likeSearch], (err, countResult) => {
+      if (err) throw err;
+
+      const totalGrades = countResult[0].total;
+      const totalPages = Math.ceil(totalGrades / limit);
+
+      res.render("admin_manage_grades", {
+        grades,
+        search,
+        currentPage: page,
+        totalPages,
+        req
+      });
+    });
+  });
+});
 
 
 
+app.post("/admin/grades/:id/update", requireAdmin, (req, res) => {
+  const id = req.params.id;
+  const { grade, result, credits } = req.body;
 
+  const query = `
+    UPDATE enrollment 
+    SET grade = ?, grade_result = ?, credits_earned = ? 
+    WHERE enrollment_id = ?
+  `;
+
+  conn.query(query, [grade, result, credits, id], (err) => {
+    if (err) throw err;
+    res.redirect("/admin/grades");
+  });
+}); 
+
+// Admin CSV upload GET
+app.get("/admin/upload-csv", requireAdmin, (req, res) => {
+  const previewQuery = ` 
+    SELECT * FROM enrollment ORDER BY enrollment_id DESC LIMIT 10
+  `;
+  conn.query(previewQuery, (err, recentGrades) => {
+    if (err) throw err;
+
+    res.render("admin_upload_csv", {
+      uploadSuccess: req.query.success,
+      currentYear: new Date().getFullYear(),
+      recentGrades,
+      req
+    });
+  }); 
+});
+
+
+// Admin CSV upload POST
+app.post("/admin/upload-grades", requireAdmin, uploadCSV.single("csvFile"), (req, res) => {
+  if (!req.file) return res.send("No file uploaded.");
+
+  const results = [];
+  let successfulInserts = 0;
+  let failedRows = [];
+
+  fs.createReadStream(req.file.path)
+    .pipe(csv())
+    .on("data", (row) => {
+      // Simple validation
+      if (!row.student_id || !row.module_code || !row.grade_result || isNaN(row.credits_earned)) {
+        failedRows.push(row);
+      } else {
+        results.push(row);
+      }
+    })
+    .on("end", () => {
+      const insertQuery = `
+        INSERT INTO enrollment (student_id, module_code, grade, grade_result, credits_earned)
+        VALUES (?, ?, ?, ?, ?)
+      `;
+
+      results.forEach((r) => {
+        conn.query(
+          insertQuery,
+          [
+            r.student_id,
+            r.module_code,
+            r.grade,
+            r.grade_result,
+            r.credits_earned
+          ],
+          (err) => {
+            if (!err) successfulInserts++;
+          }
+        );
+      });
+
+      fs.unlink(req.file.path, () => {
+        res.redirect(`/admin/upload-csv?success=1&count=${successfulInserts}&errors=${failedRows.length}`);
+      });
+    });
+});
+
+ 
 
 
 // Logout

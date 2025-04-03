@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Upload Grades CSV</title>
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+</head>
+<body>
+  <header>
+    <h2>Upload Grades (CSV)</h2>
+    <nav>
+      <a href="/admin" class="button">Dashboard</a>
+      <a href="/logout" class="button">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <form action="/admin/upload-grades" method="POST" enctype="multipart/form-data">
+      <label for="csvFile">Select CSV File:</label>
+      <input type="file" name="csvFile" accept=".csv" required />
+      <button type="submit" class="button">Upload</button>
+    </form>
+    
+    <h3>📝 Recently Uploaded Grades</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Student ID</th>
+      <th>Module</th>
+      <th>Grade</th>
+      <th>Result</th>
+      <th>Credits</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% recentGrades.forEach(row => { %>
+      <tr>
+        <td><%= row.student_id %></td>
+        <td><%= row.module_code %></td>
+        <td><%= row.grade || "-" %></td>
+        <td><%= row.grade_result %></td>
+        <td><%= row.credits_earned %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+
+
+    <% if (uploadSuccess) { %>
+        <div class="alert success" id="uploadBanner">
+          ✅ CSV uploaded successfully! 
+          <%= req.query.count || 0 %> records added. 
+          <% if (req.query.errors > 0) { %>
+            ⚠️ <%= req.query.errors %> rows were skipped due to invalid data.
+          <% } %>
+        </div>
+      <% } %>
+      
+      
+      
+  </main>
+</body>
+
+<script>
+    setTimeout(() => {
+      const banner = document.getElementById("successBanner");
+      if (banner) {
+        banner.style.transition = "opacity 0.5s ease";
+        banner.style.opacity = "0";
+        setTimeout(() => banner.remove(), 500);
+      }
+    }, 4000);
+  </script>
+  
+</html>
