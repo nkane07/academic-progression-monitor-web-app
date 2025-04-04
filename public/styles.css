@@ -386,6 +386,20 @@ footer {
   background-color: #e6f0ff;
 }
 
+.failed-core-module {
+  color: #dc3545; 
+  font-weight: bold;
+}
+
+.progression-decision-pass {
+  color: green;
+  font-weight: bold;
+}
+
+.progression-decision-fail {
+  color: #dc3545;
+  font-weight: bold;
+}
 
 
 

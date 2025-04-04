@@ -575,6 +575,8 @@ app.post("/admin/messages/send", requireAdmin, (req, res) => {
 });
 
 app.get("/admin/students", requireAdmin, (req, res) => {
+  const search = req.query.search || "";
+  const likeSearch = `%${search}%`;
   const page = parseInt(req.query.page) || 1;
   const limit = 10;
   const offset = (page - 1) * limit;
@@ -589,29 +591,30 @@ app.get("/admin/students", requireAdmin, (req, res) => {
       SUM(e.credits_earned) AS total_credits
     FROM students s
     LEFT JOIN enrollment e ON s.student_number = e.student_id
+    WHERE LOWER(s.first_name) LIKE LOWER(?) OR LOWER(s.last_name) LIKE LOWER(?)
     GROUP BY s.student_number
     LIMIT ? OFFSET ?
   `;
 
-  conn.query(query, [limit, offset], (err, results) => {
+  conn.query(query, [likeSearch, likeSearch, limit, offset], (err, results) => {
     if (err) throw err;
 
     const students = results.map(s => {
       let level = "Year 1";
       if (s.total_credits >= 240) level = "Year 3";
       else if (s.total_credits >= 120) level = "Year 2";
-
-      return {
-        ...s,
-        level
-      };
+      return { ...s, level };
     });
 
-    // Get total count for pagination
-    const countQuery = `SELECT COUNT(*) AS count FROM students`;
-    conn.query(countQuery, (err, countResult) => {
-      if (err) throw err;
+    const countQuery = `
+      SELECT COUNT(DISTINCT s.student_number) AS count
+      FROM students s
+      LEFT JOIN enrollment e ON s.student_number = e.student_id
+      WHERE LOWER(s.first_name) LIKE LOWER(?) OR LOWER(s.last_name) LIKE LOWER(?)
+    `;
 
+    conn.query(countQuery, [likeSearch, likeSearch], (err, countResult) => {
+      if (err) throw err;
       const totalStudents = countResult[0].count;
       const totalPages = Math.ceil(totalStudents / limit);
 
@@ -619,11 +622,13 @@ app.get("/admin/students", requireAdmin, (req, res) => {
         students,
         req,
         currentPage: page,
-        totalPages
+        totalPages,
+        search
       });
     });
   });
 });
+
 
 
 
@@ -973,6 +978,237 @@ app.post("/admin/modules/:id/delete", requireAdmin, (req, res) => {
     res.redirect("/admin/modules?deleted=1");
   });
 });
+
+//Admin manage reports
+app.get("/admin/reports", requireAdmin, (req, res) => {
+  const selectedLevel = req.query.level || 'all';
+  const stats = {};
+
+  // Build level condition for SQL
+  let levelCondition = '';
+  if (selectedLevel === '1') {
+    levelCondition = `HAVING total_credits < 120`;
+  } else if (selectedLevel === '2') {
+    levelCondition = `HAVING total_credits >= 120 AND total_credits < 240`;
+  } else if (selectedLevel === '3') {
+    levelCondition = `HAVING total_credits >= 240`;
+  }
+
+  // Query student totals & avg grade
+  const studentCreditQuery = `
+    SELECT 
+      s.student_number,
+      s.pathway,
+      SUM(CASE WHEN e.grade_result IN ('pass', 'pass capped') THEN e.credits_earned ELSE 0 END) AS total_credits,
+      AVG(CASE WHEN e.grade_result NOT IN ('excused', 'absent') THEN e.grade ELSE NULL END) AS avg_grade
+    FROM students s
+    JOIN enrollment e ON s.student_number = e.student_id
+    GROUP BY s.student_number
+    ${levelCondition}
+  `;
+
+  conn.query(studentCreditQuery, (err, studentData) => {
+    if (err) throw err;
+
+    // Progression Summary
+    const progressionSummary = {};
+    studentData.forEach(s => {
+      if (!progressionSummary[s.pathway]) {
+        progressionSummary[s.pathway] = { total: 0, progressing: 0 };
+      }
+
+      progressionSummary[s.pathway].total++;
+
+      if (s.total_credits >= 100 && s.avg_grade >= 40) {
+        progressionSummary[s.pathway].progressing++;
+      }
+    });
+    stats.progressionSummary = progressionSummary;
+
+    // If no students, skip to render
+    if (studentData.length === 0) {
+      stats.pathwayStats = [];
+      stats.failedModules = [];
+      return res.render("admin_reports", {
+        stats,
+        req,
+        selectedLevel
+      });
+    }
+
+    // Use filtered student IDs in next queries
+    const studentIds = studentData.map(s => `'${s.student_number}'`).join(",");
+
+    const pathwayStatsQuery = `
+      SELECT s.pathway, 
+             COUNT(*) AS total_students,
+             SUM(CASE WHEN e.grade_result IN ('pass', 'pass capped') THEN 1 ELSE 0 END) AS passed_modules,
+             AVG(e.grade) AS avg_grade
+      FROM students s
+      JOIN enrollment e ON s.student_number = e.student_id
+      WHERE s.student_number IN (${studentIds})
+      GROUP BY s.pathway
+    `;
+
+    conn.query(pathwayStatsQuery, (err, pathwayStats) => {
+      if (err) throw err;
+      stats.pathwayStats = pathwayStats;
+
+      // Failed Modules
+      const failedModulesQuery = `
+        SELECT 
+          e.module_code, 
+          m.module_name, 
+          COUNT(*) AS fails 
+        FROM enrollment e
+        JOIN modules m ON e.module_code = m.module_code
+        WHERE e.grade_result = 'fail'
+        GROUP BY e.module_code
+        ORDER BY fails DESC
+        LIMIT 5
+      `;
+
+      conn.query(failedModulesQuery, (err, failedModules) => {
+        if (err) throw err;
+
+        stats.failedModules = failedModules;
+
+        res.render("admin_reports", {
+          stats,
+          req,
+          selectedLevel
+        });
+      });
+    });
+  });
+});
+
+
+// Admin view of individual student summary
+app.get("/admin/students/:id/summary", requireAdmin, (req, res) => {
+  const userId = req.params.id;
+
+  const studentQuery = `
+    SELECT s.*, u.username 
+    FROM students s 
+    JOIN users u ON s.user_id = u.user_id 
+    WHERE s.user_id = ?
+  `;
+
+  conn.query(studentQuery, [userId], (err, studentResult) => {
+    if (err) throw err;
+    if (studentResult.length === 0) return res.send("Student not found.");
+
+    const student = studentResult[0];
+
+    const gradesQuery = `
+      SELECT 
+        e.academic_year,
+        m.module_name,
+        e.module_code,
+        e.grade,
+        e.grade_result,
+        e.resit_grade,
+        e.resit_result,
+        e.credits_earned
+      FROM enrollment e
+      JOIN modules m ON e.module_code = m.module_code
+      WHERE e.student_id = ?
+    `;
+
+    conn.query(gradesQuery, [student.student_number], (err, records) => {
+      if (err) throw err;
+
+      let totalCredits = 0;
+      let totalGrade = 0;
+      let gradedModules = 0;
+      let failedModules = [];
+      let resitModules = [];
+      let attemptTracker = {};
+      let coreFails = [];
+
+      records.forEach(record => {
+        const grade = parseFloat(record.grade) || 0;
+
+        if (record.grade_result === 'pass' || record.grade_result === 'pass capped') {
+          totalCredits += record.credits_earned;
+        }
+
+        if (!['excused', 'absent'].includes(record.grade_result)) {
+          totalGrade += grade;
+          gradedModules++;
+        }
+
+        if (['fail', 'absent'].includes(record.grade_result)) {
+          attemptTracker[record.module_code] = (attemptTracker[record.module_code] || 0) + 1;
+          failedModules.push(record.module_name);
+          resitModules.push(record.module_name);
+        }
+
+        if (record.grade_result === 'excused') {
+          resitModules.push(record.module_name);
+        }
+      });
+
+      // Determine required credits for progression
+      let requiredCredits = 120;
+      if (totalCredits >= 240) {
+        requiredCredits = 360;
+      } else if (totalCredits >= 120) {
+        requiredCredits = 240;
+      }
+
+      // Define core modules per pathway
+      const coreModules = (student.pathway === 'Information Systems') ? ['IFSY-259', 'IFSY-240']
+                        : (student.pathway === 'Business Data Analytics') ? ['IFSY-257']
+                        : [];
+
+      records.forEach(record => {
+        if (coreModules.includes(record.module_code) && ['fail', 'absent'].includes(record.grade_result)) {
+          coreFails.push(record.module_name);
+        }
+        
+      });
+
+      const exceededAttempts = Object.entries(attemptTracker)
+        .filter(([_, count]) => count >= 4)
+        .map(([code]) => code);
+
+      const averageGrade = gradedModules ? (totalGrade / gradedModules).toFixed(2) : 0;
+
+      // Determine progression decision
+      let decision = "Progression decision pending";
+
+if (coreFails.length > 0) {
+  decision = "Failed Core Module - Review Needed";
+} else if (exceededAttempts.length > 0) {
+  decision = "Max Attempts Reached - Review Required";
+} else if (totalCredits >= 100 && averageGrade >= 40) {
+  decision = "Eligible to Progress";
+} else {
+  decision = "Progression Denied - Insufficient Credits or Grades";
+}
+
+
+      res.render("admin_student_summary", {
+        student,
+        records,
+        totalCredits,
+        averageGrade,
+        failedModules,
+        resitModules,
+        coreFails,
+        exceededAttempts,
+        decision,
+        req,
+        requiredCredits
+      });
+    });
+  });
+});
+
+
+
 
 
 // Logout
