@@ -1,17 +1,20 @@
 
 .button {
-  padding: 10px 20px;
-  background-color: #3f8efc;
-  color: white;
+  display: inline-block;
+  padding: 8px 18px;
+  color: white !important; /* Force white text */
+  background-color: #0172ad;
   text-decoration: none;
   border-radius: 5px;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
+  margin: 1px 1px;
+  border: none;
 }
 
 .button:hover {
-  background-color: #2561b2;
+  background-color: #0056b3;
+  color: white !important; /* Ensure hover doesn't change it */
 }
+
 
 header {
   text-align: center;

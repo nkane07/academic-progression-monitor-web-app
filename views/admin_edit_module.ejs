@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Module</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+</head>
+<body>
+  <header>
+    <h2>Edit Module</h2>
+    <nav>
+      <a href="/admin/modules" class="button">Back to Modules</a>
+      <a href="/admin" class="button">Dashboard</a>
+      <a href="/logout" class="button">Logout</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <form action="/admin/modules/<%= module.module_id %>/update" method="POST">
+      <label>Module Name:
+        <input type="text" name="module_name" value="<%= module.module_name %>" required>
+      </label>
+      <label>Module Code:
+        <input type="text" name="module_code" value="<%= module.module_code %>" required>
+      </label>
+      <label>Credit Value:
+        <input type="number" name="credit_value" value="<%= module.credit_value %>" required>
+      </label>
+      <label>Pathway Code:
+        <input type="text" name="degree_programme_code" value="<%= module.degree_programme_code %>" required>
+      </label>
+      <label>Semester:
+        <select name="semester" required>
+          <option value="AUT" <%= module.semester === 'AUT' ? 'selected' : '' %>>Autumn</option>
+          <option value="SPR" <%= module.semester === 'SPR' ? 'selected' : '' %>>Spring</option>
+          <option value="FYR" <%= module.semester === 'FYR' ? 'selected' : '' %>>Full Year</option>
+        </select>
+      </label>
+
+      <button type="submit" class="button">Update Module</button>
+    </form>
+  </main>
+
+  <footer>
+    <p>University Portal © <%= currentYear %></p>
+  </footer>
+</body>
+</html>

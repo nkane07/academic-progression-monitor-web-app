@@ -804,7 +804,7 @@ app.post("/admin/grades/:id/update", requireAdmin, (req, res) => {
   });
 }); 
 
-// Admin CSV upload GET
+// Admin CSV 
 app.get("/admin/upload-csv", requireAdmin, (req, res) => {
   const previewQuery = ` 
     SELECT * FROM enrollment ORDER BY enrollment_id DESC LIMIT 10
@@ -821,8 +821,6 @@ app.get("/admin/upload-csv", requireAdmin, (req, res) => {
   }); 
 });
 
-
-// Admin CSV upload POST
 app.post("/admin/upload-grades", requireAdmin, uploadCSV.single("csvFile"), (req, res) => {
   if (!req.file) return res.send("No file uploaded.");
 
@@ -833,7 +831,7 @@ app.post("/admin/upload-grades", requireAdmin, uploadCSV.single("csvFile"), (req
   fs.createReadStream(req.file.path)
     .pipe(csv())
     .on("data", (row) => {
-      // Simple validation
+      
       if (!row.student_id || !row.module_code || !row.grade_result || isNaN(row.credits_earned)) {
         failedRows.push(row);
       } else {
@@ -868,7 +866,113 @@ app.post("/admin/upload-grades", requireAdmin, uploadCSV.single("csvFile"), (req
     });
 });
 
- 
+ // Admin view modules
+ app.get("/admin/modules", requireAdmin, (req, res) => {
+  const search = req.query.search || "";
+  const likeSearch = `%${search}%`;
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
+  const query = `
+    SELECT * FROM modules
+    WHERE module_code LIKE ? OR module_name LIKE ?
+    ORDER BY module_code
+    LIMIT ? OFFSET ?
+  `;
+
+  const countQuery = `
+    SELECT COUNT(*) AS total
+    FROM modules
+    WHERE module_code LIKE ? OR module_name LIKE ?
+  `;
+
+  conn.query(query, [likeSearch, likeSearch, limit, offset], (err, modules) => {
+    if (err) throw err;
+
+    conn.query(countQuery, [likeSearch, likeSearch], (err, countResult) => {
+      if (err) throw err;
+
+      const totalModules = countResult[0].total;
+      const totalPages = Math.ceil(totalModules / limit);
+
+      res.render("admin_modules", {
+        modules,
+        search,
+        totalModules,
+        currentPage: page,
+        totalPages,
+        req
+      });
+    });
+  });
+});
+
+
+
+//Admin add modules
+app.get("/admin/modules/new", requireAdmin, (req, res) => {
+  res.render("admin_add_module", { req });
+});
+
+app.post("/admin/modules/new", requireAdmin, (req, res) => {
+  const { module_name, module_code, credit_value, degree_programme_code, semester } = req.body;
+
+  const checkQuery = "SELECT * FROM modules WHERE module_code = ?";
+  conn.query(checkQuery, [module_code], (err, existing) => {
+    if (err) throw err;
+
+    if (existing.length > 0) {
+      return res.redirect("/admin/modules/new?duplicate=1");
+    }
+
+    const insertQuery = `
+      INSERT INTO modules (module_name, module_code, credit_value, degree_programme_code, semester)
+      VALUES (?, ?, ?, ?, ?)
+    `;
+    conn.query(insertQuery, [module_name, module_code, credit_value, degree_programme_code, semester], (err) => {
+      if (err) throw err;
+      res.redirect("/admin/modules?added=1");
+    });
+  });
+});
+
+
+//Admin edit modules
+app.get("/admin/modules/:id/edit", requireAdmin, (req, res) => {
+  const id = req.params.id;
+  const query = "SELECT * FROM modules WHERE module_id = ?";
+  conn.query(query, [id], (err, result) => {
+    if (err) throw err;
+    if (result.length === 0) return res.send("Module not found.");
+    res.render("admin_edit_module", { module: result[0], currentYear: new Date().getFullYear() });
+  });
+});
+
+app.post("/admin/modules/:id/update", requireAdmin, (req, res) => {
+  const id = req.params.id;
+  const { module_name, module_code, credit_value, degree_programme_code, semester } = req.body;
+
+  const query = `
+    UPDATE modules 
+    SET module_name = ?, module_code = ?, credit_value = ?, degree_programme_code = ?, semester = ?
+    WHERE module_id = ?
+  `;
+  conn.query(query, [module_name, module_code, credit_value, degree_programme_code, semester, id], (err) => {
+    if (err) throw err;
+    res.redirect("/admin/modules?updated=1");
+  });
+});
+
+//Admin delete a module
+app.post("/admin/modules/:id/delete", requireAdmin, (req, res) => {
+  const id = req.params.id;
+  const query = "DELETE FROM modules WHERE module_id = ?";
+  conn.query(query, [id], (err) => {
+    if (err) throw err;
+    res.redirect("/admin/modules?deleted=1");
+  });
+});
 
 
 // Logout
