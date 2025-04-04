@@ -33,10 +33,27 @@
           </div>
           <% } %>
 
-          <form method="get" action="/admin/students" style="margin-bottom: 1rem;">
-            <input type="text" name="search" placeholder="Search by name" value="<%= search %>" />
+          <form method="get" action="/admin/students" class="search-form">
+            <div class="input-wrapper">
+              <input 
+                type="text" 
+                name="search" 
+                placeholder="Search by student name..." 
+                value="<%= search || '' %>" 
+                oninput="document.getElementById('resetSearch').style.display = this.value ? 'block' : 'none';"
+              />
+              <button 
+                type="button" 
+                id="resetSearch" 
+                onclick="window.location.href='/admin/students'" 
+                class="reset-icon"
+                style="<%= search ? 'display:block' : 'display:none' %>"
+              >✖</button>
+            </div>
             <button type="submit" class="button">Search</button>
           </form>
+          
+          
           
             <h3>All Students</h3>
             <table>

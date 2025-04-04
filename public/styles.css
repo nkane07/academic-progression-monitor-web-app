@@ -401,6 +401,37 @@ footer {
   font-weight: bold;
 }
 
+.search-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.input-wrapper {
+  position: relative;
+  width: 250px;
+}
+
+.input-wrapper input[type="text"] {
+  width: 100%;
+  padding-right: 25px;
+}
+
+.reset-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+  color: #888;
+}
+
+.reset-icon:hover {
+  color: #000;
+}
 
 
 
