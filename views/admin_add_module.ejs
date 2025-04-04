@@ -2,70 +2,65 @@
 <html>
 <head>
   <title>Add New Module</title>
-<link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
   <link rel="stylesheet" href="/styles.css">
-  
 </head>
 <body>
-  <header>
-    <h2>Add New Module</h2>
-    <nav>
-      <a href="/admin/modules" class="button">Back to Modules</a>
-      <a href="/admin" class="button">Dashboard</a>
-      
+  <%- include("partials/banner", { req }) %>
 
-      </a>
-      
-      <a href="/logout" class="button">Logout</a>
-    </nav>
-  </header>
+  <main class="page-container">
+    <h1>Add New Module</h1>
 
-  <main class="container">
     <% if (req.query.added) { %>
-        <div id="successBanner" class="alert success">
-          <i class="fas fa-check-circle"></i> Module added successfully!
-        </div>
-      <% } %>
+      <div id="successBanner" class="alert success">
+        ✅ Module added successfully!
+      </div>
+    <% } %>
 
-      <% if (req.query.duplicate) { %>
-        <div class="alert danger">A module with this code already exists.</div>
-      <% } %>
-      
-      
+    <% if (req.query.duplicate) { %>
+      <div class="alert error">A module with this code already exists.</div>
+    <% } %>
+
     <form action="/admin/modules/new" method="post" class="form-section">
-      <label>Module Name:
-        <input type="text" name="module_name" required>
-      </label>
+      <div class="form-group">
+        <label for="module_name">Module Name:</label>
+        <input type="text" name="module_name" id="module_name" required>
+      </div>
 
-      <label>Module Code:
-        <input type="text" name="module_code" required>
-      </label>
+      <div class="form-group">
+        <label for="module_code">Module Code:</label>
+        <input type="text" name="module_code" id="module_code" required>
+      </div>
 
-      <label>Credit Value:
-        <input type="number" name="credit_value" required>
-      </label>
+      <div class="form-group">
+        <label for="credit_value">Credit Value:</label>
+        <input type="number" name="credit_value" id="credit_value" required>
+      </div>
 
-      <label>Pathway Code (e.g. IFSY, BSAS):
-        <input type="text" name="degree_programme_code" required>
-      </label>
+      <div class="form-group">
+        <label for="degree_programme_code">Pathway Code (e.g. IFSY, BSAS):</label>
+        <input type="text" name="degree_programme_code" id="degree_programme_code" required>
+      </div>
 
-      <label for="semester">Semester:</label>
-<select name="semester" id="semester" required>
-  <option value="">-- Select Semester --</option>
-  <option value="AUT">Autumn</option>
-  <option value="SPR">Spring</option>
-  <option value="FYR">Full Year</option>
-</select>
+      <div class="form-group">
+        <label for="semester">Semester:</label>
+        <select name="semester" id="semester" required>
+          <option value="">-- Select Semester --</option>
+          <option value="AUT">Autumn</option>
+          <option value="SPR">Spring</option>
+          <option value="FYR">Full Year</option>
+        </select>
+      </div>
 
-      </label>
-
-      <button type="submit" class="button">Add Module</button>
+      <div class="form-group">
+        <button type="submit" class="button">Add Module</button>
+      </div>
     </form>
   </main>
 
   <footer>
     <p>University Portal © <%= currentYear %></p>
   </footer>
+
   <script>
     setTimeout(() => {
       const banner = document.getElementById('successBanner');
@@ -76,6 +71,5 @@
       }
     }, 4000);
   </script>
-  
 </body>
 </html>

@@ -47,6 +47,8 @@ app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
+
+
 // Middleware to check user role
 function requireStudent(req, res, next) {
   if (req.session.userRole !== "student") return res.redirect("/");
@@ -72,6 +74,12 @@ app.use(
     cookie: { maxAge: 600000 }, // 10 min session
   })
 );
+
+app.use((req, res, next) => {
+  res.locals.req = req; 
+  next();
+});
+
 
 // Render login page
 app.get("/", (req, res) => {

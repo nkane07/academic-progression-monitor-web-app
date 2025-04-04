@@ -1,0 +1,18 @@
+<div class="banner">
+  <div class="banner-left">
+    <img src="/icons/bannerlogo.png" alt="Logo" class="banner-logo">
+    <span class="banner-title">Academic Portal</span>
+  </div>
+
+  <div class="banner-nav">
+    <% if (req.session.userRole === 'admin') { %>
+      <a href="/admin" class="nav-link">Dashboard</a>
+      <a href="/admin/students" class="nav-link">Students</a>
+      <a href="/admin/modules" class="nav-link">Modules</a>
+      <a href="/admin/grades" class="nav-link">Grades</a>
+      <a href="/admin/messages" class="nav-link">Messages</a>
+      <a href="/admin/reports" class="nav-link">Reports</a>
+    <% } %>
+    <a href="/logout" class="nav-link logout-link">Logout</a>
+  </div>
+</div>

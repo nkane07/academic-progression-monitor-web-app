@@ -3,42 +3,53 @@
 <head>
   <title>Edit Module</title>
   <link rel="stylesheet" href="/styles.css">
-  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
 </head>
 <body>
-  <header>
-    <h2>Edit Module</h2>
-    <nav>
+  <%- include("partials/banner", { req }) %>
+
+  <main class="page-container">
+    <h1>Edit Module</h1>
+
+    <div class="nav-buttons">
       <a href="/admin/modules" class="button">Back to Modules</a>
       <a href="/admin" class="button">Dashboard</a>
       <a href="/logout" class="button">Logout</a>
-    </nav>
-  </header>
+    </div>
 
-  <main class="container">
-    <form action="/admin/modules/<%= module.module_id %>/update" method="POST">
-      <label>Module Name:
-        <input type="text" name="module_name" value="<%= module.module_name %>" required>
-      </label>
-      <label>Module Code:
-        <input type="text" name="module_code" value="<%= module.module_code %>" required>
-      </label>
-      <label>Credit Value:
-        <input type="number" name="credit_value" value="<%= module.credit_value %>" required>
-      </label>
-      <label>Pathway Code:
-        <input type="text" name="degree_programme_code" value="<%= module.degree_programme_code %>" required>
-      </label>
-      <label>Semester:
-        <select name="semester" required>
-          <option value="AUT" <%= module.semester === 'AUT' ? 'selected' : '' %>>Autumn</option>
-          <option value="SPR" <%= module.semester === 'SPR' ? 'selected' : '' %>>Spring</option>
-          <option value="FYR" <%= module.semester === 'FYR' ? 'selected' : '' %>>Full Year</option>
-        </select>
-      </label>
+    <div class="summary-card">
+      <form action="/admin/modules/<%= module.module_id %>/update" method="POST">
+        <div class="form-group">
+          <label for="module_name">Module Name:</label>
+          <input type="text" name="module_name" id="module_name" value="<%= module.module_name %>" required>
+        </div>
 
-      <button type="submit" class="button">Update Module</button>
-    </form>
+        <div class="form-group">
+          <label for="module_code">Module Code:</label>
+          <input type="text" name="module_code" id="module_code" value="<%= module.module_code %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="credit_value">Credit Value:</label>
+          <input type="number" name="credit_value" id="credit_value" value="<%= module.credit_value %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="degree_programme_code">Pathway Code:</label>
+          <input type="text" name="degree_programme_code" id="degree_programme_code" value="<%= module.degree_programme_code %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="semester">Semester:</label>
+          <select name="semester" id="semester" required>
+            <option value="AUT" <%= module.semester === 'AUT' ? 'selected' : '' %>>Autumn</option>
+            <option value="SPR" <%= module.semester === 'SPR' ? 'selected' : '' %>>Spring</option>
+            <option value="FYR" <%= module.semester === 'FYR' ? 'selected' : '' %>>Full Year</option>
+          </select>
+        </div>
+
+        <button type="submit" class="button">Update Module</button>
+      </form>
+    </div>
   </main>
 
   <footer>
