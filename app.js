@@ -83,8 +83,9 @@ app.use((req, res, next) => {
 
 // Render login page
 app.get("/", (req, res) => {
-  res.render("login");
+  res.render("login", { error: null });
 });
+
 
 // Handle login form submission
 const bcrypt = require("bcrypt");
@@ -119,14 +120,17 @@ app.post("/login", (req, res) => {
             res.redirect("/admin");
           }
         } else {
-          res.send("Incorrect password. <a href='/'>Try again</a>");
+          //wrong password
+          res.render("login", { error: "Incorrect password. Please try again." });
         }
       });
     } else {
-      res.send("User not found. <a href='/'>Try again</a>");
+      //user not found
+      res.render("login", { error: "User not found. Please try again." });
     }
   });
 });
+
 
 // Student dashboard
 app.get("/student", requireStudent, (req, res) => {
@@ -134,12 +138,11 @@ app.get("/student", requireStudent, (req, res) => {
   res.render("student_dashboard", { studentName });
 });
 
-// Admin dashboard
+// Admin dashboard 
 app.get("/admin", requireAdmin, (req, res) => {
   res.render("admin_dashboard");
 });
 
-// Utility function to reuse student academic logic
 function getStudentAcademicData(userId, callback) {
   const studentQuery = `SELECT student_number, pathway FROM students WHERE user_id = ?`;
 

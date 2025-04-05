@@ -10,13 +10,11 @@
   <%- include("partials/banner") %>
 
 
-  <header>
+  <div class="page-header">
     <h2>Manage Modules</h2>
-    <nav>
+    
       <a href="/admin/modules/new" class="button">Add Module</a>
-     
-    </nav>
-  </header>
+  </div>
 
   <main class="container">
     <% if (req.query.added) { %>
