@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Advisor Communication</title>
-  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+  
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
  
@@ -16,13 +16,11 @@
 </script>
 
 <body>
+  <%- include("partials/banner", { req }) %>
+
   <header>
     <h3><i class="fas fa-comments"></i> Contact Advisor </h3>
-    <nav>
     
-      <a href="/student" class="button">Dashboard</a>
-      <a href="/logout" class="button">Logout</a>
-    </nav>
   </header>
 
   <main>

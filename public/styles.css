@@ -342,11 +342,14 @@ details.progression-details ul {
 .input-wrapper {
   position: relative;
   width: 250px;
+  margin-right: 25px;
 }
 
 .input-wrapper input[type="text"] {
   width: 100%;
   padding-right: 25px;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
 .reset-icon {
