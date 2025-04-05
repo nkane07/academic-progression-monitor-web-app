@@ -1,138 +1,167 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-    <title>Reports & Statistics</title>
-    <link rel="stylesheet" href="/styles.css">
-   
-   </head>
+  <title>Reports & Statistics</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
 
 <body>
-    <%- include("partials/banner") %>
+  <%- include("partials/banner") %>
 
-    <header>
-        <h2>Reports</h2>
-       
-    </header>
+  <header>
+    <h2>Reports</h2>
+  </header>
 
-    <main class="container">
-        <h3>Module Passes and Average Grades by Pathway</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Pathway</th>
-                    <th>Total Students</th>
-                    <th>Modules Passed</th>
-                    <th>Average Grade</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% stats.pathwayStats.forEach(p=> { %>
-                    <tr>
-                        <td>
-                            <%= p.pathway %>
-                        </td>
-                        <td>
-                            <%= p.total_students %>
-                        </td>
-                        <td>
-                            <%= p.passed_modules %>
-                        </td>
-                        <td>
-                            <%= p.avg_grade ? parseFloat(p.avg_grade).toFixed(2) : 'N/A' %>
-                        </td>
+  <main class="container">
 
-                    </tr>
-                    <% }) %>
-            </tbody>
-        </table>
+    <h3>Module Passes and Average Grades by Pathway</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Pathway</th>
+          <th>Total Students</th>
+          <th>Modules Passed</th>
+          <th>Average Grade</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% stats.pathwayStats.forEach(p => { %>
+          <tr>
+            <td><%= p.pathway %></td>
+            <td><%= p.total_students %></td>
+            <td><%= p.passed_modules %></td>
+            <td><%= p.avg_grade ? parseFloat(p.avg_grade).toFixed(2) : 'N/A' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
 
-        <h3>Top 5 Most Failed Modules</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Module</th>
-                    <th>Module Name</th>
-                    <th>Fail Count</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% stats.failedModules.forEach(f=> { %>
-                    <tr>
-                        <td>
-                            <%= f.module_code %>
-                        </td>
-                        <td>
-                            <%= f.module_name %>
-                        </td>
-                        <td>
-                            <%= f.fails %>
-                        </td>
-                    </tr>
-                    <% }) %>
-            </tbody>
-        </table>
+    <h3>Top 5 Most Failed Modules</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Module</th>
+          <th>Module Name</th>
+          <th>Fail Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% stats.failedModules.forEach(f => { %>
+          <tr>
+            <td><%= f.module_code %></td>
+            <td><%= f.module_name %></td>
+            <td><%= f.fails %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
 
-        <h3>Progression Rates by Pathway</h3>
+    <% if (stats.resitStats && stats.resitStats.length > 0) { %>
+      <h3>Most Resat Modules</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Module Code</th>
+            <th>Module Name</th>
+            <th>Resit Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% stats.resitStats.forEach(module => { %>
+            <tr>
+              <td><%= module.module_code %></td>
+              <td><%= module.module_name %></td>
+              <td><%= module.resit_count %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <p>No resit statistics available.</p>
+    <% } %>
 
-        <form method="get" action="/admin/reports" style="text-align: center; margin-bottom: 1rem;">
-            <label for="level">Filter by Academic Year:</label>
-            <select name="level" id="level" onchange="this.form.submit()">
-                <option value="all" <%=selectedLevel==='all' ? 'selected' : '' %>>All Years</option>
-                <option value="1" <%=selectedLevel==='1' ? 'selected' : '' %>>Year 1</option>
-                <option value="2" <%=selectedLevel==='2' ? 'selected' : '' %>>Year 2</option>
-                <option value="3" <%=selectedLevel==='3' ? 'selected' : '' %>>Year 3</option>
-            </select>
-        </form>
+    <h3>Progression Rates by Pathway</h3>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Pathway</th>
-                    <th>Total Students</th>
-                    <th>Progressing</th>
-                    <th>Progression Rate</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% for (let key in stats.progressionSummary) { const data=stats.progressionSummary[key]; const
-                    rate=((data.progressing / data.total) * 100).toFixed(1); %>
-                    <tr>
-                        <td>
-                            <%= key %>
-                        </td>
-                        <td>
-                            <%= data.total %>
-                        </td>
-                        <td>
-                            <%= data.progressing %>
-                        </td>
-                        <td>
-                            <%= rate %>%
-                        </td>
-                    </tr>
-                    <% } %>
-            </tbody>
-        </table>
+    <form method="get" action="/admin/reports" class="filter-form">
+      <div class="filter-group">
+        <label for="level">Academic Year:</label>
+        <select name="level" id="level" onchange="this.form.submit()">
+          <option value="all" <%= selectedLevel === 'all' ? 'selected' : '' %>>All Years</option>
+          <option value="1" <%= selectedLevel === '1' ? 'selected' : '' %>>Year 1</option>
+          <option value="2" <%= selectedLevel === '2' ? 'selected' : '' %>>Year 2</option>
+          <option value="3" <%= selectedLevel === '3' ? 'selected' : '' %>>Year 3</option>
+        </select>
 
-        <canvas id="progressionChart" width="600" height="300"></canvas>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script>
+        <label for="pathway">Pathway:</label>
+        <select name="pathway" id="pathway" onchange="this.form.submit()">
+          <option value="all" <%= selectedPathway === 'all' ? 'selected' : '' %>>All Pathways</option>
+          <option value="Information Systems" <%= selectedPathway === 'Information Systems' ? 'selected' : '' %>>Information Systems</option>
+          <option value="Business Data Analytics" <%= selectedPathway === 'Business Data Analytics' ? 'selected' : '' %>>Business Data Analytics</option>
+        </select>
+      </div>
+    </form>
+
+    <form method="get" action="/admin/reports" class="clear-filters-form">
+        <button type="submit" class="button secondary">Clear Filters</button>
+      </form>
+      
+    <table>
+      <thead>
+        <tr>
+          <th>Pathway</th>
+          <th>Total Students</th>
+          <th>Progressing</th>
+          <th>Progression Rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% for (let key in stats.progressionSummary) {
+          const data = stats.progressionSummary[key];
+          const rate = ((data.progressing / data.total) * 100).toFixed(1);
+        %>
+          <tr>
+            <td><%= key %></td>
+            <td><%= data.total %></td>
+            <td><%= data.progressing %></td>
+            <td><%= rate %>%</td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+
+    <div class="chart-container">
+      <canvas id="progressionChart"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
           const ctx = document.getElementById('progressionChart').getContext('2d');
-        
+      
+          const labels = <%- JSON.stringify(Object.keys(stats.progressionSummary)) %>;
+          const data = <%- JSON.stringify(Object.values(stats.progressionSummary).map(p =>
+            p.total ? ((p.progressing / p.total) * 100).toFixed(2) : 0
+          )) %>;
+      
+          const backgroundColors = [
+            '#b31b1b', 
+            '#b38d1b',  
+            
+          ];
+      
           const chart = new Chart(ctx, {
             type: 'bar',
             data: {
-              labels: <%- JSON.stringify(Object.keys(stats.progressionSummary)) %>,
+              labels: labels,
               datasets: [{
                 label: 'Progression %',
-                data: <%- JSON.stringify(Object.values(stats.progressionSummary).map(p =>
-                  p.total ? ((p.progressing / p.total) * 100).toFixed(2) : 0
-                )) %>,
-                backgroundColor: '#3f8efc'
+                data: data,
+                backgroundColor: labels.map((_, i) => backgroundColors[i % backgroundColors.length])
               }]
             },
             options: {
+              responsive: true,
+              maintainAspectRatio: false,
               scales: {
                 y: {
                   beginAtZero: true,
@@ -141,17 +170,14 @@
               }
             }
           });
-        </script>
-        
-        </script>
+        });
+      </script>
+      
+    
+  </main>
 
-
-    </main>
-
-    <footer>
-        <p>University Portal © <%= currentYear %>
-        </p>
-    </footer>
+  <footer>
+    <p>University Portal © <%= currentYear %></p>
+  </footer>
 </body>
-
 </html>

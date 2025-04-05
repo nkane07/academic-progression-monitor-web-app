@@ -990,6 +990,7 @@ app.post("/admin/modules/:id/delete", requireAdmin, (req, res) => {
 //Admin manage reports
 app.get("/admin/reports", requireAdmin, (req, res) => {
   const selectedLevel = req.query.level || 'all';
+  const selectedPathway = req.query.pathway || 'all';
   const stats = {};
 
   // Build level condition for SQL
@@ -1010,7 +1011,9 @@ app.get("/admin/reports", requireAdmin, (req, res) => {
       SUM(CASE WHEN e.grade_result IN ('pass', 'pass capped') THEN e.credits_earned ELSE 0 END) AS total_credits,
       AVG(CASE WHEN e.grade_result NOT IN ('excused', 'absent') THEN e.grade ELSE NULL END) AS avg_grade
     FROM students s
-    JOIN enrollment e ON s.student_number = e.student_id
+JOIN enrollment e ON s.student_number = e.student_id
+${selectedPathway !== 'all' ? 'WHERE s.pathway = ' + conn.escape(selectedPathway) : ''}
+
     GROUP BY s.student_number
     ${levelCondition}
   `;
@@ -1033,6 +1036,8 @@ app.get("/admin/reports", requireAdmin, (req, res) => {
     });
     stats.progressionSummary = progressionSummary;
 
+   
+
     // If no students, skip to render
     if (studentData.length === 0) {
       stats.pathwayStats = [];
@@ -1040,7 +1045,8 @@ app.get("/admin/reports", requireAdmin, (req, res) => {
       return res.render("admin_reports", {
         stats,
         req,
-        selectedLevel
+        selectedLevel,
+        selectedPathway
       });
     }
 
@@ -1081,15 +1087,37 @@ app.get("/admin/reports", requireAdmin, (req, res) => {
 
         stats.failedModules = failedModules;
 
+        const resitModulesQuery = `
+  SELECT 
+    e.module_code, 
+    m.module_name, 
+    COUNT(*) AS resit_count
+  FROM enrollment e
+  JOIN modules m ON e.module_code = m.module_code
+  WHERE e.resit_result IS NOT NULL AND e.resit_result != ''
+  GROUP BY e.module_code
+  ORDER BY resit_count DESC
+  LIMIT 5
+`;
+
+      
+      conn.query(resitModulesQuery, (err, resitStats) => {
+        if (err) throw err;
+
+        stats.resitStats = resitStats;
+
         res.render("admin_reports", {
           stats,
           req,
-          selectedLevel
+          selectedLevel,
+          selectedPathway
         });
-      });
-    });
-  });
-});
+      }); 
+    });   
+  });     
+  });   
+});  
+
 
 
 // Admin view of individual student summary
@@ -1108,6 +1136,8 @@ app.get("/admin/students/:id/summary", requireAdmin, (req, res) => {
     if (studentResult.length === 0) return res.send("Student not found.");
 
     const student = studentResult[0];
+    const manualDecision = student.manual_decision;
+
 
     const gradesQuery = `
       SELECT 
@@ -1208,6 +1238,7 @@ if (coreFails.length > 0) {
         coreFails,
         exceededAttempts,
         decision,
+        manualDecision,
         req,
         requiredCredits
       });
@@ -1215,6 +1246,17 @@ if (coreFails.length > 0) {
   });
 });
 
+
+app.post("/admin/students/:id/override-decision", requireAdmin, (req, res) => {
+  const userId = req.params.id;
+  const { manual_decision } = req.body;
+
+  const query = `UPDATE students SET manual_decision = ? WHERE user_id = ?`;
+  conn.query(query, [manual_decision, userId], (err) => {
+    if (err) throw err;
+    res.redirect(`/admin/students/${userId}/summary`);
+  });
+});
 
 
 
@@ -1235,4 +1277,3 @@ app.listen(3000, () => {
 app.use((req, res) => {
   res.status(404).send("404 - Page not found");
 });
- 

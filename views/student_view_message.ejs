@@ -9,71 +9,69 @@
 <body>
   <%- include("partials/banner", { req }) %>
 
-  <header>
+  <header class="page-container" style="text-align: center;">
     <h2><i class="fas fa-envelope-open-text"></i> Message Details</h2>
-    <nav>
+    <div style="margin-top: 1rem;">
       <a href="/student/messages" class="button">Back to Inbox</a>
-      <a href="/student" class="button">Dashboard</a>
-      <a href="/logout" class="button">Logout</a>
-    </nav>
+    </div>
   </header>
+  
 
-  <main>
+  <main class="page-container">
 
     <% if (req.query.replied) { %>
-      <div id="replySuccessMessage" style="background: #d4edda; color: #155724; padding: 1rem; margin-bottom: 1rem; border-radius: 5px;">
+      <div id="replySuccessMessage" class="alert success">
         <i class="fas fa-check-circle"></i> Reply sent successfully!
       </div>
     <% } %>
-    
-    
-    <section>
-      <h3><%= message.subject %></h3>
-      <p>
-        <strong>From:</strong> <%= message.sender_name %><br>
-        <strong>Sent:</strong> <%= new Date(message.sent_at).toLocaleString() %>
-      </p>
-      <div>
-        <p><%= message.body %></p>
-      </div>
-    </section>
-
+  
+    <!-- Message Details -->
+    <div class="summary-card">
+      <h2><i class="fas fa-envelope-open-text"></i> <%= message.subject %></h2>
+      <p><strong>From:</strong> <%= message.sender_name %></p>
+      <p><strong>Sent:</strong> <%= new Date(message.sent_at).toLocaleString() %></p>
+      <p><%= message.body %></p>
+    </div>
+  
     <!-- Replies -->
-    <section>
-      <h4><i class="fas fa-comments"></i> Replies</h4>
+    <div class="summary-card">
+      <h3><i class="fas fa-comments"></i> Replies</h3>
       <% if (replies.length === 0) { %>
         <p>No replies yet.</p>
       <% } else { %>
         <ul>
           <% replies.forEach(reply => { %>
             <li style="margin-bottom: 1rem;">
-              <strong><%= reply.sender_name %></strong>
-              (<%= new Date(reply.sent_at).toLocaleString() %>)<br>
+              <strong><%= reply.sender_name %></strong> 
+              <small>(<%= new Date(reply.sent_at).toLocaleString() %>)</small><br>
               <div><%= reply.body %></div>
               <hr>
             </li>
           <% }) %>
         </ul>
       <% } %>
-    </section>
-
+    </div>
+  
     <!-- Reply Form -->
-    <section>
-      <h4><i class="fas fa-reply"></i> Reply to this message</h4>
-      <form method="POST" action="/student/messages/reply">
+    <div class="summary-card">
+      <h3><i class="fas fa-reply"></i> Reply to this message</h3>
+      <form method="POST" action="/student/messages/reply" class="form-group">
         <input type="hidden" name="parent_id" value="<%= message.message_id %>">
-        <textarea name="body" rows="4" required></textarea><br>
+        <textarea name="body" rows="4" required></textarea>
+        <br>
         <button type="submit" class="button"><i class="fas fa-paper-plane"></i> Send Reply</button>
       </form>
-    </section>
-
+    </div>
+  
     <!-- Delete Option -->
-    <section>
-      <form action="/student/messages/<%= message.message_id %>/delete" method="POST" style="margin-top: 2rem;" onsubmit="return confirm('Are you sure you want to delete this message?');">
+    <div class="summary-card">
+      <form action="/student/messages/<%= message.message_id %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this message?');">
         <button type="submit" class="button danger"><i class="fas fa-trash"></i> Delete Message</button>
       </form>
-    </section>
+    </div>
+  
   </main>
+  
 
   <footer>
     <p>University Portal © <%= currentYear %></p>

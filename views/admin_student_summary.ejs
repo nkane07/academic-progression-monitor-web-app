@@ -91,6 +91,26 @@
     </span>
   </p>
   
+  <% if (manualDecision) { %>
+    <p><strong>Overridden Decision:</strong> 
+      <span class="progression-decision-fail"><%= manualDecision %></span>
+    </p>
+  <% } %>
+  
+  <hr>
+  <h3>Admin Override</h3>
+  <form method="POST" action="/admin/students/<%= student.user_id %>/override-decision" class="form-group">
+    <label for="manual_decision">Set Manual Progression Decision:</label>
+    <select name="manual_decision" id="manual_decision" required>
+      <option value="">-- Select Decision --</option>
+      <option value="Eligible to Progress" <%= manualDecision === "Eligible to Progress" ? "selected" : "" %>>Eligible to Progress</option>
+      <option value="Progression Denied - Mitigation" <%= manualDecision === "Progression Denied" ? "selected" : "" %>>Progression Denied - Mitigation</option>
+      <option value="Repeat Year with Support" <%= manualDecision === "Repeat Year" ? "selected" : "" %>>Repeat Year with Support</option>
+      <option value="Deferred - Medical Evidence" <%= manualDecision === "Deferred - Valid Medical Evidence" ? "selected" : "" %>>Deferred - Medical Evidence</option>
+      <option value="Progression Approved (Override)" <%= manualDecision === "Progression Approved" ? "selected" : "" %>>Progression Approved (Override)</option>
+    </select>
+    <button class="button" type="submit">Override</button>
+  </form>
   
     
 
