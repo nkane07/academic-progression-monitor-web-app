@@ -81,13 +81,12 @@ app.use((req, res, next) => {
 });
 
 
-// Render login page
+// login page
 app.get("/", (req, res) => {
   res.render("login", { error: null });
 });
 
-
-// Handle login form submission
+// login form 
 const bcrypt = require("bcrypt");
 
 app.post("/login", (req, res) => {
@@ -103,9 +102,15 @@ app.post("/login", (req, res) => {
 
       bcrypt.compare(password, user.password_hash, (err, isMatch) => {
         if (err) throw err;
+
         if (isMatch) {
           req.session.userId = user.user_id;
           req.session.userRole = user.role;
+
+          //Redirect to reset password 
+          if (user.force_password_reset) {
+            return res.redirect("/reset-password");
+          }
 
           if (user.role === "student") {
             const studentQuery = "SELECT first_name, last_name FROM students WHERE user_id = ?";
@@ -120,12 +125,12 @@ app.post("/login", (req, res) => {
             res.redirect("/admin");
           }
         } else {
-          //wrong password
+          // Wrong password
           res.render("login", { error: "Incorrect password. Please try again." });
         }
       });
     } else {
-      //user not found
+      // User not found
       res.render("login", { error: "User not found. Please try again." });
     }
   });
@@ -1302,17 +1307,17 @@ app.get("/forgot-password", (req, res) => {
 });
 
 
-app.post("/forgot-password", (req, res) => {
+app.post("/forgot-password", async (req, res) => {
   const email = req.body.email;
 
   const query = `
-    SELECT u.user_id
+    SELECT u.user_id, u.username
     FROM users u
     LEFT JOIN students s ON u.user_id = s.user_id
     WHERE u.email = ? OR s.contact_email = ?
   `;
 
-  conn.query(query, [email, email], (err, results) => {
+  conn.query(query, [email, email], async (err, results) => {
     if (err) throw err;
 
     if (results.length === 0) {
@@ -1323,49 +1328,64 @@ app.post("/forgot-password", (req, res) => {
     }
 
     const user = results[0];
-    req.session.resetUserId = user.user_id;
-    res.redirect("/reset-password");
+    const tempPassword = "Temp" + Math.floor(100000 + Math.random() * 900000);
+    const hashed = await bcrypt.hash(tempPassword, 10);
+
+    const updateQuery = `
+      UPDATE users 
+      SET password_hash = ?, force_password_reset = 1 
+      WHERE user_id = ?
+    `;
+
+    conn.query(updateQuery, [hashed, user.user_id], (err) => {
+      if (err) throw err;
+
+      res.render("forgot_password", {
+        success: `A temporary password has been generated. Please check your email or contact support.`,
+        error: null
+      });
+
+      console.log(`TEMP password for ${user.username}: ${tempPassword}`);
+    });
   });
 });
+
 
 
 //reset password
 app.get("/reset-password", (req, res) => {
-  if (!req.session.resetUserId) {
-    return res.redirect("/forgot-password");
-  }
-  res.render("reset_password", { error: null });
+  if (!req.session.userId) return res.redirect("/");
+  res.render("reset_password", { error: null, success: null });
 });
 
-app.post("/reset-password", (req, res) => {
-  const { newPassword, confirmPassword } = req.body;
+app.post("/reset-password", async (req, res) => {
+  if (!req.session.userId) return res.redirect("/");
 
-  if (!req.session.resetUserId) {
-    return res.redirect("/forgot-password");
+  const { new_password, confirm_password } = req.body;
+
+  if (new_password !== confirm_password) {
+    return res.render("reset_password", {
+      error: "Passwords do not match.",
+      success: null
+    });
   }
 
-  if (newPassword !== confirmPassword) {
-    return res.render("reset_password", { error: "Passwords do not match." });
-  }
+  const hashed = await bcrypt.hash(new_password, 10);
 
-  const userId = req.session.resetUserId;
-  const bcrypt = require("bcrypt");
+  const updateQuery = `
+    UPDATE users SET password_hash = ?, force_password_reset = 0
+    WHERE user_id = ?
+  `;
 
-  bcrypt.hash(newPassword, 10, (err, hash) => {
+  conn.query(updateQuery, [hashed, req.session.userId], (err) => {
     if (err) throw err;
-
-    const query = `UPDATE users SET password_hash = ? WHERE user_id = ?`;
-    conn.query(query, [hash, userId], (err) => {
-      if (err) throw err;
-
-   
-      req.session.resetUserId = null;
-
-
-      res.redirect("/?reset=1");
+    res.render("reset_password", {
+      error: null,
+      success: "Password successfully reset! You can now log in."
     });
   });
 });
+
 
 
 

@@ -10,7 +10,7 @@ const conn = mysql.createPool({
 });
 
 const saltRounds = 10;
-const newAdminUsername = 'admin2';
+const newAdminUsername = 'admin1';
 const newAdminPassword = 'adminpass123';
 
 bcrypt.hash(newAdminPassword, saltRounds, (err, hash) => {
