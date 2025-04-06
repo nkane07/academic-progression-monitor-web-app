@@ -546,7 +546,7 @@ app.post("/admin/messages/send", requireAdmin, (req, res) => {
     });
 
   } else if (filter_type === "group") {
-    const level = parseInt(year);
+    const level = parseInt(year); 
 
     const groupQuery = `
       SELECT u.user_id
@@ -1261,6 +1261,111 @@ app.post("/admin/students/:id/override-decision", requireAdmin, (req, res) => {
   });
 });
 
+//forgot username
+app.get("/forgot-username", (req, res) => {
+  res.render("forgot_username", { username: null, error: null });
+});
+
+app.post("/forgot-username", (req, res) => {
+  const email = req.body.email;
+
+  const query = `
+    SELECT username
+    FROM users
+    WHERE email = ?
+       OR user_id IN (
+         SELECT user_id FROM students WHERE contact_email = ?
+       )
+  `;
+
+  conn.query(query, [email, email], (err, result) => {
+    if (err) throw err;
+
+    if (result.length === 0) {
+      return res.render("forgot_username", {
+        username: null,
+        error: "Email not found."
+      });
+    }
+
+    const username = result[0].username;
+    res.render("forgot_username", {
+      username,
+      error: null
+    });
+  });
+});
+
+//forgot password
+app.get("/forgot-password", (req, res) => {
+  res.render("forgot_password", { success: null, error: null });
+});
+
+
+app.post("/forgot-password", (req, res) => {
+  const email = req.body.email;
+
+  const query = `
+    SELECT u.user_id
+    FROM users u
+    LEFT JOIN students s ON u.user_id = s.user_id
+    WHERE u.email = ? OR s.contact_email = ?
+  `;
+
+  conn.query(query, [email, email], (err, results) => {
+    if (err) throw err;
+
+    if (results.length === 0) {
+      return res.render("forgot_password", {
+        error: "Email not found.",
+        success: null
+      });
+    }
+
+    const user = results[0];
+    req.session.resetUserId = user.user_id;
+    res.redirect("/reset-password");
+  });
+});
+
+
+//reset password
+app.get("/reset-password", (req, res) => {
+  if (!req.session.resetUserId) {
+    return res.redirect("/forgot-password");
+  }
+  res.render("reset_password", { error: null });
+});
+
+app.post("/reset-password", (req, res) => {
+  const { newPassword, confirmPassword } = req.body;
+
+  if (!req.session.resetUserId) {
+    return res.redirect("/forgot-password");
+  }
+
+  if (newPassword !== confirmPassword) {
+    return res.render("reset_password", { error: "Passwords do not match." });
+  }
+
+  const userId = req.session.resetUserId;
+  const bcrypt = require("bcrypt");
+
+  bcrypt.hash(newPassword, 10, (err, hash) => {
+    if (err) throw err;
+
+    const query = `UPDATE users SET password_hash = ? WHERE user_id = ?`;
+    conn.query(query, [hash, userId], (err) => {
+      if (err) throw err;
+
+   
+      req.session.resetUserId = null;
+
+
+      res.redirect("/?reset=1");
+    });
+  });
+});
 
 
 
