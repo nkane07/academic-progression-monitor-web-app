@@ -17,8 +17,14 @@
     <form action="/admin/upload-grades" method="POST" enctype="multipart/form-data">
       <label for="csvFile">Select CSV File:</label>
       <input type="file" name="csvFile" accept=".csv" required />
+    
+      <p class="admin-note">
+        <i class="fas fa-info-circle"></i> Upload a CSV with columns: <strong>student_id, module_code, grade, result, credits</strong>.
+      </p>
+    
       <button type="submit" class="button">Upload</button>
     </form>
+    
     
     <h3>📝 Recently Uploaded Grades</h3>
 <table>

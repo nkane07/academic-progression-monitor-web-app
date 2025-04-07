@@ -27,25 +27,23 @@
         <div id="alertDeleted" class="alert success">Module deleted successfully!</div>
       <% } %>
       
-      <form method="get" action="/admin/modules" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 1rem;">
-        <div style="position: relative;">
+      <form class="search-form admin-module-search" method="GET" action="/admin/modules">
+        <div class="input-wrapper">
           <input 
             type="text" 
             name="search" 
             value="<%= search %>" 
-            placeholder="Search module code or name..." 
-            style="padding-right: 30px;"
+            placeholder="Search module code or name..."
           />
           <% if (search) { %>
-            <a href="/admin/modules" 
-               style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); text-decoration: none; font-weight: bold; color: #888; font-size: 1rem;">
-              ✕
-            </a>
+            <button type="submit" class="reset-icon" name="search" value="">
+              &times;
+            </button>
           <% } %>
         </div>
-      
-        <button type="submit" class="button">Search</button>
+        <button class="button" type="submit"><i class="fas fa-search"></i> Search</button>
       </form>
+      
       
       
       <p class="page-label"><%= totalModules %> module<%= totalModules !== 1 ? "s" : "" %> found</p>

@@ -4,6 +4,8 @@
   <title>Student Summary</title>
   
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 </head>
 <body>
   <%- include("partials/banner") %>
@@ -43,59 +45,50 @@
         <% }) %>
       </tbody>
     </table>
-    <h3>Progression Summary</h3>
+    <h3><i class="fas fa-clipboard-check"></i> Progression Summary</h3>
 
-    <p><strong>Total Credits:</strong> <%= totalCredits %> / <%= requiredCredits %></p>
-    
-    <div class="progress-container">
-      <div class="progress-bar" style="width: <%= Math.min((totalCredits / requiredCredits) * 100, 100) %>%; background-color: <%= totalCredits >= requiredCredits ? '#28a745' : '#ffc107' %>;">
-        <span class="progress-text"><%= Math.round((totalCredits / requiredCredits) * 100) %>%</span>
-      </div>
-    </div>
-    
-    <p><strong>Average Grade:</strong> <%= averageGrade %>%</p>
-    
-    <div class="progress-container">
-      <div class="progress-bar" style="width: <%= Math.min(averageGrade, 100) %>%; background-color: <%= averageGrade >= 40 ? '#28a745' : '#dc3545' %>;">
-        <span class="progress-text"><%= Math.round(averageGrade) %>%</span>
-      </div>
-    </div>
-    
-    <p><strong>Failed Modules:</strong> <%= failedModules.length ? failedModules.join(', ') : 'None' %></p>
-    <p><strong>Modules Requiring Resit:</strong> <%= resitModules.length ? resitModules.join(', ') : 'None' %></p>
-    
-    <% if (coreFails.length > 0) { %>
-        <p><strong>Failed Core Modules:</strong> 
-          <% coreFails.forEach((mod, i) => { %>
-            <span class="failed-core-module"><%= mod %></span><%= i !== coreFails.length - 1 ? ', ' : '' %>
-          <% }) %>
-        </p>
-      <% } %>
-      
-      
-    
-    <% if (exceededAttempts.length > 0) { %>
-      <p><strong> Modules with 4+ Fails:</strong> <%= exceededAttempts.join(', ') %></p>
-    <% } %>
-    
-    <%
-    const isNegative = ['Fail', 'Resit', 'Review', 'Denied'].some(keyword =>
-      decision.includes(keyword)
-    );
-  %>
-  
-  <p>
-    <strong>Final Progression Decision:</strong> 
-    <span class="<%= decision.includes('Eligible') ? 'progression-decision-pass' : 'progression-decision-fail' %>">
-      <%= decision %>
-    </span>
+<p><strong><i class="fas fa-coins"></i> Total Credits:</strong> <%= totalCredits %> / <%= requiredCredits %></p>
+<div class="progress-container">
+  <div class="progress-bar" style="width: <%= Math.min((totalCredits / requiredCredits) * 100, 100) %>%; background-color: <%= totalCredits >= requiredCredits ? '#28a745' : '#ffc107' %>;">
+    <span class="progress-text"><%= Math.round((totalCredits / requiredCredits) * 100) %>%</span>
+  </div>
+</div>
+
+<p><strong><i class="fas fa-percent"></i> Average Grade:</strong> <%= averageGrade %>%</p>
+<div class="progress-container">
+  <div class="progress-bar" style="width: <%= Math.min(averageGrade, 100) %>%; background-color: <%= averageGrade >= 40 ? '#28a745' : '#dc3545' %>;">
+    <span class="progress-text"><%= Math.round(averageGrade) %>%</span>
+  </div>
+</div>
+
+<p><strong><i class="fas fa-times-circle"></i> Failed Modules:</strong> <%= failedModules.length ? failedModules.join(', ') : 'None' %></p>
+<p><strong><i class="fas fa-undo-alt"></i> Modules Requiring Resit:</strong> <%= resitModules.length ? resitModules.join(', ') : 'None' %></p>
+
+<% if (coreFails.length > 0) { %>
+  <p><strong><i class="fas fa-exclamation-circle"></i> Failed Core Modules:</strong> 
+    <% coreFails.forEach((mod, i) => { %>
+      <span class="failed-core-module"><%= mod %></span><%= i !== coreFails.length - 1 ? ', ' : '' %>
+    <% }) %>
   </p>
-  
-  <% if (manualDecision) { %>
-    <p><strong>Overridden Decision:</strong> 
-      <span class="progression-decision-fail"><%= manualDecision %></span>
-    </p>
-  <% } %>
+<% } %>
+
+<% if (exceededAttempts.length > 0) { %>
+  <p><strong><i class="fas fa-redo-alt"></i> Modules with 4+ Fails:</strong> <%= exceededAttempts.join(', ') %></p>
+<% } %>
+
+<p>
+  <strong><i class="fas fa-balance-scale"></i> Final Progression Decision:</strong> 
+  <span class="<%= decision.includes('Eligible') ? 'progression-decision-pass' : 'progression-decision-fail' %>">
+    <%= decision %>
+  </span>
+</p>
+
+<% if (manualDecision) { %>
+  <p><strong><i class="fas fa-user-shield"></i> Overridden Decision:</strong> 
+    <span class="progression-decision-fail"><%= manualDecision %></span>
+  </p>
+<% } %>
+
   
   <hr>
   <h3>Admin Override</h3>

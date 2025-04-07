@@ -4,13 +4,12 @@
   <meta charset="UTF-8">
   <title>Academic Progression Login</title>
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body class="login-page">
   <header class="login-banner">
     <img src="/icons/bannerlogo.png" alt="University Logo">
-    
   </header>
-  
   
   <div class="login-wrapper">
     <div class="login-card">
@@ -28,26 +27,48 @@
 
       <form method="POST" action="/login" class="login-form">
         <label for="userField">User ID</label>
-        <input type="text" id="userField" name="userField" required pattern=".{4,}" title="Must be at least 4 characters" placeholder="Enter your Admin / Student number">
+        <input
+          type="text"
+          id="userField"
+          name="userField"
+          required
+          pattern=".{4,}"
+          title="Must be at least 4 characters"
+          placeholder="Enter your Admin / Student number"
+          aria-label="User ID input for login"
+        >
       
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" required minlength="6" placeholder="Enter your password">
+        <input
+          type="password"
+          id="password"
+          name="password"
+          required
+          minlength="6"
+          placeholder="Enter your password"
+          aria-label="Password input"
+        >
       
-        <button type="submit" class="login-button">Sign In</button>
+        <button type="submit" class="login-button" aria-label="Sign in to your account">
+          Sign In
+        </button>
       </form>
       
+      
       <p class="login-support">
+        <i class="fas fa-question-circle"></i>
         <a href="/forgot-username">Forgot Username</a> | 
         <a href="/forgot-password">Forgot Password</a>
       </p>
-      <p class="login-support">
-        Having trouble logging in? Ring login support on 
-        <a href="tel:+447567432123">+44 7567 432123</a> or contact 
-        <a href="mailto:loginsupport@kuniversity.com">loginsupport@kuniversity.com</a>
-      </p>
-      
-      
 
-  <footer><p>University © <%= currentYear %></p></footer>
+      <p class="login-support">
+        <i class="fas fa-headset"></i> Having trouble logging in? Ring login support on 
+        <a href="tel:+447567432123"><i class="fas fa-phone"></i> +44 7567 432123</a> or contact 
+        <a href="mailto:loginsupport@kuniversity.com"><i class="fas fa-envelope"></i> loginsupport@kuniversity.com</a>
+      </p>
+
+      <footer><p>University © <%= currentYear %></p></footer>
+    </div>
+  </div>
 </body>
 </html>

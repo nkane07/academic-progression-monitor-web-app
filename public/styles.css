@@ -573,14 +573,17 @@ details.progression-details ul {
 /* search bar */
 .search-form {
   display: flex;
+  flex-wrap: wrap; 
   gap: 10px;
   align-items: center;
+  margin-bottom: 1rem;
 }
 
 .input-wrapper {
+  flex: 1; 
+  min-width: 250px;
+  max-width: 400px; 
   position: relative;
-  width: 250px;
-  margin-right: 25px;
 }
 
 .input-wrapper input[type="text"] {
@@ -588,7 +591,9 @@ details.progression-details ul {
   padding-right: 25px;
   padding-top: 5px;
   padding-bottom: 5px;
+  box-sizing: border-box;
 }
+
 
 .reset-icon {
   position: absolute;
@@ -788,6 +793,10 @@ canvas#progressionChart {
   margin-top: 1rem;
   font-style: italic;
   color: #666;
+}
+
+.admin-module-search input[type="text"] {
+  width: 300px; 
 }
 
 

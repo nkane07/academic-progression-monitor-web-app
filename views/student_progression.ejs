@@ -3,15 +3,17 @@
   <head>
     <title>Progression Status</title>
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-dyZ88mC6Up2uqS4h/K3rMsj62PZfW+nR6vn5bdnU8pHRH5tJzJrKX9F3b6QJY4J6XJo+1E3Lj+WYo4VZ2+5c1g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+   
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="/styles.css">
   </head>
   
 <body>
   <%- include("partials/banner", { req }) %>
+
   <div class="page-header">
-    <h3>Student Progression</h3>
-</div>
+    <h3><i class="fas fa-user-graduate"></i> Student Progression</h3>
+  </div>
 
   <main>
     <h2><i class="fas fa-chart-line"></i> Progression Statistics</h2>
@@ -19,6 +21,7 @@
     <h3><i class="fas fa-clipboard-check"></i> Progression Summary</h3>
     <p><strong><i class="fas fa-graduation-cap"></i> Level / Stage:</strong> Year <%= currentLevel.replace('L', '') %></p>
 
+    
     <p><strong><i class="fas fa-coins"></i> Total Credits:</strong> <%= totalCredits %> / <%= requiredCredits %></p>
     <div class="progress-container">
       <div class="progress-bar" style="width: <%= Math.min((totalCredits / requiredCredits) * 100, 100) %>%; background-color: <%= totalCredits >= requiredCredits ? '#28a745' : '#ffc107' %>;">
@@ -34,39 +37,39 @@
       </div>
     </div>
 
-    
     <p><strong><i class="fas fa-times-circle"></i> Failed Modules:</strong> <%= failedModules.join(', ') || 'None' %></p>
+
+    
     <p><strong><i class="fas fa-undo-alt"></i> Modules requiring resit:</strong> <%= resitModules.join(', ') || 'None' %></p>
 
+    
     <h3><i class="fas fa-balance-scale"></i> Progression Decision <i class="fas fa-info-circle" title="Based on academic rules and module performance."></i></h3>
-<p>
-  <strong class="<%= decision.includes('Progress') || decision.includes('Eligible') ? 'progression-decision-pass' : 'progression-decision-fail' %>">
-    <%= decision %>
-  </strong>
-</p>
+    <p>
+      <strong class="<%= decision.includes('Progress') || decision.includes('Eligible') ? 'progression-decision-pass' : 'progression-decision-fail' %>">
+        <%= decision %>
+      </strong>
+    </p>
 
-
+  
     <% if (adminNote) { %>
       <p class="admin-note">
-        <i class="fas fa-user-shield"></i> Decision overriden by administrator.
+        <i class="fas fa-user-shield"></i> Decision overridden by administrator.
       </p>
     <% } %>
-    
 
     <a href="/student/messages/contact" class="button">
       <i class="fas fa-user-headset"></i> Contact Advisor
     </a>
 
-    
     <details class="progression-details">
       <summary><i class="fas fa-list-alt"></i> Progression Requirements</summary>
       <ul>
-        <li>✅ Earn at least 100+ credits to progress.</li>
-        <li>✅ Maintain a minimum average of 40%.</li>
-        <li>✅ Pass all core modules at your current level.</li>
-        <li>⚠️ Only one resit per module allowed per year.</li>
-        <li>❌ Four attempts maximum per module.</li>
-        <li>⚠️ All Year 1 (Level 01) modules must be passed before final year.</li>
+        <li><i class="fas fa-check-circle"></i> Earn at least 100+ credits to progress.</li>
+        <li><i class="fas fa-check-circle"></i> Maintain a minimum average of 40%.</li>
+        <li><i class="fas fa-check-circle"></i> Pass all core modules at your current level.</li>
+        <li><i class="fas fa-exclamation-triangle"></i> Only one resit per module allowed per year.</li>
+        <li><i class="fas fa-times-circle"></i> Four attempts maximum per module.</li>
+        <li><i class="fas fa-exclamation-circle"></i> All Year 1 (Level 01) modules must be passed before final year.</li>
       </ul>
     </details>
   </main>

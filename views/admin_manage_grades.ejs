@@ -65,7 +65,17 @@
               <td><%= g.first_name %> <%= g.last_name %></td>
               <td><%= g.module_code %></td>
               <form action="/admin/grades/<%= g.enrollment_id %>/update" method="POST">
-                <td><input type="number" name="grade" value="<%= g.grade %>" required style="width: 60px;" /></td>
+                <td>
+                  <input 
+                    type="number" 
+                    name="grade" 
+                    value="<%= g.grade %>" 
+                    min="0" 
+                    max="100" 
+                    required 
+                    style="width: 60px;" 
+                  />
+                </td>
                 <td>
                   <select name="result" required>
                     <option value="pass" <%= g.grade_result === 'pass' ? 'selected' : '' %>>Pass</option>
@@ -75,9 +85,20 @@
                     <option value="absent" <%= g.grade_result === 'absent' ? 'selected' : '' %>>Absent</option>
                   </select>
                 </td>
-                <td><input type="number" name="credits" value="<%= g.credits_earned %>" required style="width: 60px;" /></td>
+                <td>
+                  <input 
+                    type="number" 
+                    name="credits" 
+                    value="<%= g.credits_earned %>" 
+                    min="0" 
+                    max="120" 
+                    required 
+                    style="width: 60px;" 
+                  />
+                </td>
                 <td><button type="submit" class="button">Update</button></td>
               </form>
+              
             </tr>
           <% }) %>
         </tbody>
