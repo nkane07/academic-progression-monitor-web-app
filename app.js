@@ -284,25 +284,69 @@ app.get("/student/grades", requireStudent, (req, res) => {
   });
 });
 
+//student progression and decisions
+const { getAcademicYear } = require("./utils/dateHelpers");
+
 app.get("/student/progression", requireStudent, (req, res) => {
   const userId = req.session.userId;
+  const academicYear = getAcademicYear();
 
   getStudentAcademicData(userId, (err, data) => {
     if (err) throw err;
     if (!data) return res.send("Student not found.");
 
-    res.render("student_progression", {
-      totalCredits: data.totalCredits,
-      requiredCredits: data.requiredCredits,
-      averageGrade: data.averageGrade,
-      failedModules: data.failedModules,
-      resitModules: data.resitModules,
-      decision: data.decision,
-      currentLevel: data.currentLevel,
-      currentYear: new Date().getFullYear()
+    const checkQuery = `
+      SELECT * FROM progression_decisions 
+      WHERE student_id = ? AND academic_year = ?
+    `;
+
+    conn.query(checkQuery, [userId, academicYear], (err, result) => {
+      if (err) throw err;
+
+      if (result.length === 0) {
+        const insertQuery = `
+          INSERT INTO progression_decisions 
+          (student_id, academic_year, decision_text, decision_date, notes)
+          VALUES (?, ?, ?, NOW(), ?)
+        `;
+        conn.query(insertQuery, [userId, academicYear, data.decision, null], (err) => {
+          if (err) throw err;
+          console.log("Progression decision saved.");
+        });
+      }
+
+      // Fetch the final decision (either system-generated or overridden)
+      const fetchDecisionQuery = `
+        SELECT decision_text, notes 
+        FROM progression_decisions 
+        WHERE student_id = ? AND academic_year = ?
+        ORDER BY decision_date DESC LIMIT 1
+      `;
+
+      conn.query(fetchDecisionQuery, [userId, academicYear], (err, decisionResults) => {
+        if (err) throw err;
+
+        const finalDecision = decisionResults.length > 0 ? decisionResults[0].decision_text : data.decision;
+        const adminNote = decisionResults.length > 0 ? decisionResults[0].notes : null;
+
+        res.render("student_progression", {
+          totalCredits: data.totalCredits,
+          requiredCredits: data.requiredCredits,
+          averageGrade: data.averageGrade,
+          failedModules: data.failedModules,
+          resitModules: data.resitModules,
+          decision: finalDecision,
+          adminNote,
+          currentLevel: data.currentLevel,
+          academicYear,
+          currentYear: new Date().getFullYear()
+        });
+      });
     });
   });
 });
+
+
 
 
 // Student profile
@@ -1132,7 +1176,7 @@ ${selectedPathway !== 'all' ? 'WHERE s.pathway = ' + conn.escape(selectedPathway
 app.get("/admin/students/:id/summary", requireAdmin, (req, res) => {
   const userId = req.params.id;
 
-  const studentQuery = `
+  const studentQuery = ` 
     SELECT s.*, u.username 
     FROM students s 
     JOIN users u ON s.user_id = u.user_id 
@@ -1145,7 +1189,6 @@ app.get("/admin/students/:id/summary", requireAdmin, (req, res) => {
 
     const student = studentResult[0];
     const manualDecision = student.manual_decision;
-
 
     const gradesQuery = `
       SELECT 
@@ -1196,7 +1239,6 @@ app.get("/admin/students/:id/summary", requireAdmin, (req, res) => {
         }
       });
 
-      // Determine required credits for progression
       let requiredCredits = 120;
       if (totalCredits >= 240) {
         requiredCredits = 360;
@@ -1204,16 +1246,14 @@ app.get("/admin/students/:id/summary", requireAdmin, (req, res) => {
         requiredCredits = 240;
       }
 
-      // Define core modules per pathway
       const coreModules = (student.pathway === 'Information Systems') ? ['IFSY-259', 'IFSY-240']
-                        : (student.pathway === 'Business Data Analytics') ? ['IFSY-257']
-                        : [];
+        : (student.pathway === 'Business Data Analytics') ? ['IFSY-257']
+        : [];
 
       records.forEach(record => {
         if (coreModules.includes(record.module_code) && ['fail', 'absent'].includes(record.grade_result)) {
           coreFails.push(record.module_name);
         }
-        
       });
 
       const exceededAttempts = Object.entries(attemptTracker)
@@ -1222,49 +1262,80 @@ app.get("/admin/students/:id/summary", requireAdmin, (req, res) => {
 
       const averageGrade = gradedModules ? (totalGrade / gradedModules).toFixed(2) : 0;
 
-      // Determine progression decision
+      // progression decision
       let decision = "Progression decision pending";
 
-if (coreFails.length > 0) {
-  decision = "Failed Core Module - Review Needed";
-} else if (exceededAttempts.length > 0) {
-  decision = "Max Attempts Reached - Review Required";
-} else if (totalCredits >= 100 && averageGrade >= 40) {
-  decision = "Eligible to Progress";
-} else {
-  decision = "Progression Denied - Insufficient Credits or Grades";
-}
+      if (coreFails.length > 0) {
+        decision = "Failed Core Module - Review Needed";
+      } else if (exceededAttempts.length > 0) {
+        decision = "Max Attempts Reached - Review Required";
+      } else if (totalCredits >= 100 && averageGrade >= 40) {
+        decision = "Eligible to Progress";
+      } else {
+        decision = "Progression Denied - Insufficient Credits or Grades";
+      }
 
+      // progression decision history
+      const historyQuery = `
+        SELECT academic_year, decision_text, decision_date, notes
+        FROM progression_decisions
+        WHERE student_id = ?
+        ORDER BY decision_date DESC
+      `;
 
-      res.render("admin_student_summary", {
-        student,
-        records,
-        totalCredits,
-        averageGrade,
-        failedModules,
-        resitModules,
-        coreFails,
-        exceededAttempts,
-        decision,
-        manualDecision,
-        req,
-        requiredCredits
+      conn.query(historyQuery, [userId], (err, progressionHistory) => {
+        if (err) throw err;
+
+        res.render("admin_student_summary", {
+          student,
+          records,
+          totalCredits,
+          averageGrade,
+          failedModules,
+          resitModules,
+          coreFails,
+          exceededAttempts,
+          decision,
+          manualDecision,
+          req,
+          requiredCredits,
+          progressionHistory 
+        });
       });
     });
   });
 });
 
 
+
+
+
 app.post("/admin/students/:id/override-decision", requireAdmin, (req, res) => {
   const userId = req.params.id;
   const { manual_decision } = req.body;
+  const academicYear = getAcademicYear();
+  const overrideNote = "Manual override by admin";
 
-  const query = `UPDATE students SET manual_decision = ? WHERE user_id = ?`;
-  conn.query(query, [manual_decision, userId], (err) => {
+  const upsertQuery = `
+    INSERT INTO progression_decisions (student_id, academic_year, decision_text, decision_date, notes)
+    VALUES (?, ?, ?, NOW(), ?)
+    ON DUPLICATE KEY UPDATE
+      decision_text = VALUES(decision_text),
+      decision_date = NOW(),
+      notes = VALUES(notes)
+  `;
+
+  conn.query(upsertQuery, [userId, academicYear, manual_decision, overrideNote], (err) => {
     if (err) throw err;
-    res.redirect(`/admin/students/${userId}/summary`);
+
+    const updateStudentQuery = `UPDATE students SET manual_decision = ? WHERE user_id = ?`;
+    conn.query(updateStudentQuery, [manual_decision, userId], (err) => {
+      if (err) throw err;
+      res.redirect(`/admin/students/${userId}/summary`);
+    });
   });
 });
+
 
 //forgot username
 app.get("/forgot-username", (req, res) => {

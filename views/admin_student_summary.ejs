@@ -112,7 +112,37 @@
     <button class="button" type="submit">Override</button>
   </form>
   
-    
+  <h3>Progression History</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Academic Year</th>
+        <th>Decision</th>
+        <th>Date</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% progressionHistory.forEach(d => { %>
+
+        <tr>
+          <td><%= d.academic_year %></td>
+          <td><%= d.decision_text %></td>
+          <td><%= new Date(d.decision_date).toLocaleDateString() %></td>
+          <td><%= d.notes || '—' %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <% if (progressionHistory.length === 0) { %>
+    <p class="no-history-message">
+      No progression decisions recorded yet for this student.
+    </p>
+  <% } %>
+  
+  
+  
 
   </main>
 

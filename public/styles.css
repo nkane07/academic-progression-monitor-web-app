@@ -170,6 +170,15 @@ body.login-page {
   margin-top: 0.25rem;
 }
 
+.admin-note {
+  color: #856404;
+  background-color: #fff3cd;
+  padding: 8px;
+  margin-top: 10px;
+  border-left: 4px solid #ffc107;
+  font-style: italic;
+}
+
 
 
 
@@ -772,6 +781,13 @@ canvas#progressionChart {
 
 .clear-filters-form .button.secondary:hover {
   background-color: #555;
+}
+
+.no-history-message {
+  text-align: center;
+  margin-top: 1rem;
+  font-style: italic;
+  color: #666;
 }
 
 
