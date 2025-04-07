@@ -13,15 +13,19 @@
       <a href="/admin/reports" class="nav-link">Reports</a>
       <a href="/admin/upload-csv" class="nav-link">Upload Grades</a>
       <a href="/logout" class="nav-link logout-link">Logout</a>
-  
+
     <% } else if (req.session.userRole === 'student') { %>
       <a href="/student" class="nav-link">Dashboard</a>
       <a href="/student/profile" class="nav-link">Profile</a>
       <a href="/student/grades" class="nav-link">Academic Records</a>
       <a href="/student/progression" class="nav-link">Progression Status</a>
-      <a href="/student/messages" class="nav-link">Messages</a>
+      <a href="/student/messages" class="nav-link">
+        Messages
+        <% if (typeof unreadCount !== 'undefined' && unreadCount > 0) { %>
+          <span class="badge badge-danger"><%= unreadCount %></span>
+        <% } %>
+      </a>
       <a href="/logout" class="nav-link logout-link">Logout</a>
     <% } %>
   </div>
-  
 </div>

@@ -55,6 +55,7 @@ function requireStudent(req, res, next) {
   next();
 }
 
+
 function requireAdmin(req, res, next) {
   if (req.session.userRole !== "admin") return res.redirect("/");
   next();
@@ -80,6 +81,27 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use((req, res, next) => {
+  if (req.session && req.session.userRole === "student") {
+    const unreadQuery = `
+      SELECT COUNT(*) AS unreadCount
+      FROM messages
+      WHERE recipient_id = ? AND is_read = 0
+    `;
+    conn.query(unreadQuery, [req.session.userId], (err, result) => {
+      if (err) {
+        console.error("Error fetching unread count:", err);
+        res.locals.unreadCount = 0;
+      } else {
+        res.locals.unreadCount = result[0].unreadCount;
+      }
+      next();
+    });
+  } else {
+    res.locals.unreadCount = 0;
+    next();
+  }
+});
 
 // login page
 app.get("/", (req, res) => {

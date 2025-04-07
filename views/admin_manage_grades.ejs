@@ -55,6 +55,7 @@
             <th>Module</th>
             <th>Grade</th>
             <th>Result</th>
+            <th>Status</th>
             <th>Credits</th>
             <th>Actions</th>
           </tr>
@@ -85,6 +86,16 @@
                     <option value="absent" <%= g.grade_result === 'absent' ? 'selected' : '' %>>Absent</option>
                   </select>
                 </td>
+                
+                <td>
+                  <span class="<%= 
+                    g.grade_result === 'pass' || g.grade_result === 'pass capped' ? 'badge badge-success' : 
+                    g.grade_result === 'fail' ? 'badge badge-danger' : 
+                    'badge badge-warning' %>">
+                    <%= g.grade_result %>
+                  </span>
+                </td>
+                
                 <td>
                   <input 
                     type="number" 
