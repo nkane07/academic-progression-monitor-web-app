@@ -1,52 +1,39 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-    <title>Manage Grades</title>
-    <link rel="stylesheet" href="/styles.css">
-   
-   </head>
-
+  <title>Manage Grades</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
 <body>
-    <%- include("partials/banner") %>
 
+  <%- include("partials/banner") %>
+
+  <main class="page-container">
     <div class="page-header">
-    <h2>Manage Grades</h2>
-    
-      
+      <h1>Manage Grades</h1>
       <a href="/admin/upload-csv" class="button">Upload CSV</a>
     </div>
-   
 
-  <main>
-    <!-- Search form -->
-    <form method="get" action="/admin/grades" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 1rem; position: relative;">
-      <div style="position: relative;">
-        <input 
-          type="text" 
-          name="search" 
-          value="<%= search %>" 
-          placeholder="Search student/module..." 
-          style="padding-right: 30px;"
-        />
-        <% if (search) { %>
-          <a href="/admin/grades" 
-             style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); text-decoration: none; font-weight: bold; color: #888; font-size: 1rem;">
-            ✕
-          </a>
-        <% } %>
-      </div>
+
+    <form action="/admin/grades" method="get" class="search-form">
+      <input 
+        type="text" 
+        name="search" 
+        placeholder="Search student/module..." 
+        value="<%= search %>"
+      />
+      <% if (search) { %>
+        <a href="/admin/grades" class="clear-search">✕</a>
+      <% } %>
       <button type="submit" class="button">Search</button>
     </form>
 
-    <!-- Error message if nothing found -->
     <% if (grades.length === 0 && search) { %>
-      <div class="alert error" style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+      <div class="alert error">
         No results found for "<%= search %>". Please try again.
       </div>
     <% } %>
 
-    <!-- Grades table -->
     <% if (grades.length > 0) { %>
       <table>
         <thead>
@@ -74,28 +61,25 @@
                     min="0" 
                     max="100" 
                     required 
-                    style="width: 60px;" 
                   />
                 </td>
                 <td>
                   <select name="result" required>
-                    <option value="pass" <%= g.grade_result === 'pass' ? 'selected' : '' %>>Pass</option>
-                    <option value="pass capped" <%= g.grade_result === 'pass capped' ? 'selected' : '' %>>Pass Capped</option>
-                    <option value="fail" <%= g.grade_result === 'fail' ? 'selected' : '' %>>Fail</option>
-                    <option value="excused" <%= g.grade_result === 'excused' ? 'selected' : '' %>>Excused</option>
-                    <option value="absent" <%= g.grade_result === 'absent' ? 'selected' : '' %>>Absent</option>
+                    <% ['pass', 'pass capped', 'fail', 'excused', 'absent'].forEach(opt => { %>
+                      <option value="<%= opt %>" <%= g.grade_result === opt ? "selected" : "" %>>
+                        <%= opt.charAt(0).toUpperCase() + opt.slice(1) %>
+                      </option>
+                    <% }) %>
                   </select>
                 </td>
-                
                 <td>
-                  <span class="<%= 
-                    g.grade_result === 'pass' || g.grade_result === 'pass capped' ? 'badge badge-success' : 
-                    g.grade_result === 'fail' ? 'badge badge-danger' : 
-                    'badge badge-warning' %>">
+                  <span class="badge <%= 
+                    g.grade_result === 'pass' || g.grade_result === 'pass capped' ? 'badge-success' : 
+                    g.grade_result === 'fail' ? 'badge-danger' : 'badge-warning' 
+                  %>">
                     <%= g.grade_result %>
                   </span>
                 </td>
-                
                 <td>
                   <input 
                     type="number" 
@@ -104,48 +88,46 @@
                     min="0" 
                     max="120" 
                     required 
-                    style="width: 60px;" 
                   />
                 </td>
                 <td><button type="submit" class="button">Update</button></td>
               </form>
-              
             </tr>
           <% }) %>
         </tbody>
       </table>
     <% } %>
 
-    <!-- Pagination (only if results exist) -->
+    <!-- Pagination -->
     <% if (grades.length > 0) { %>
-      <p class="page-label">Page <%= currentPage %> of <%= totalPages %></p>
+      <div class="pagination-controls">
+        <p>Page <%= currentPage %> of <%= totalPages %></p>
 
-      <div class="pagination">
-        <% if (currentPage > 1) { %>
-          <a href="/admin/grades?page=<%= currentPage - 1 %>&search=<%= search %>" class="page-button">Previous</a>
-        <% } %>
+        <div class="pagination">
+          <% if (currentPage > 1) { %>
+            <a href="?page=<%= currentPage - 1 %>&search=<%= search %>" class="page-button">Prev</a>
+          <% } %>
 
-        <% 
-          const maxVisible = 5;
-          let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-          let endPage = Math.min(totalPages, startPage + maxVisible - 1);
-          if (endPage - startPage < maxVisible - 1) {
-            startPage = Math.max(1, endPage - maxVisible + 1);
-          }
-        %>
+          <% 
+            const maxVisible = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            if (endPage - startPage < maxVisible - 1) {
+              startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+          %>
 
-        <% for (let i = startPage; i <= endPage; i++) { %>
-          <a 
-            href="/admin/grades?page=<%= i %>&search=<%= search %>" 
-            class="page-button <%= i === currentPage ? 'active' : '' %>"
-          >
-            <%= i %>
-          </a>
-        <% } %>
+          <% for (let i = startPage; i <= endPage; i++) { %>
+            <a 
+              href="?page=<%= i %>&search=<%= search %>" 
+              class="page-button <%= i === currentPage ? 'active' : '' %>"
+            ><%= i %></a>
+          <% } %>
 
-        <% if (currentPage < totalPages) { %>
-          <a href="/admin/grades?page=<%= currentPage + 1 %>&search=<%= search %>" class="page-button">Next</a>
-        <% } %>
+          <% if (currentPage < totalPages) { %>
+            <a href="?page=<%= currentPage + 1 %>&search=<%= search %>" class="page-button">Next</a>
+          <% } %>
+        </div>
       </div>
     <% } %>
   </main>
@@ -153,5 +135,6 @@
   <footer>
     <p>University Portal © <%= currentYear %></p>
   </footer>
+
 </body>
 </html>

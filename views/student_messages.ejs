@@ -1,71 +1,63 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <div class="page-header">
-    <h3>Student Messages</h3>
-</div>
-  
+  <meta charset="UTF-8">
+  <title>Student Messages</title>
+  <meta name="viewport" content="width=device-width" />
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
- 
 </head>
-
-<script>
-  setTimeout(() => {
-    const alert = document.querySelector('.alert.success');
-    if (alert) alert.style.display = 'none';
-  }, 3000); 
-</script>
 
 <body>
   <%- include("partials/banner", { req }) %>
 
- 
+  <header class="page-header">
+    <h2>Student Messages</h2>
+  </header>
 
-  <main>
+  <main class="container">
 
-    
-    
+    <% if (req.query.sent) { %>
+      <div class="alert success">
+        <i class="fas fa-check-circle"></i> Your message was sent successfully!
+      </div>
+    <% } %>
+
     <div class="tab-buttons">
       <a href="/student/messages?box=inbox" class="button <%= box === 'inbox' ? 'active-tab' : '' %>">Inbox</a>
       <a href="/student/messages?box=sent" class="button <%= box === 'sent' ? 'active-tab' : '' %>">Sent</a>
-      <a href="/student/messages/contact" class="button"><i class="fas fa-user-graduate"></i> Contact Advisor</a>
+      <a href="/student/messages/contact" class="button">
+        <i class="fas fa-user-graduate"></i> Contact Advisor
+      </a>
     </div>
 
-    <!-- Search form -->
-<form method="GET" action="/student/messages" style="margin-bottom: 1rem;">
-  <input type="text" name="search" placeholder="Search by subject or sender" value="<%= typeof search !== 'undefined' ? search : '' %>">
-  <input type="hidden" name="box" value="<%= box %>">
-  <button type="submit"><i class="fas fa-search"></i> Search</button>
-</form>
+    <form method="GET" action="/student/messages" class="search-form">
+      <input 
+        type="text" 
+        name="search" 
+        placeholder="Search by subject or sender" 
+        value="<%= search || '' %>"
+      />
+      <input type="hidden" name="box" value="<%= box %>">
+      <button type="submit"><i class="fas fa-search"></i> Search</button>
+    </form>
 
-<div class="info-box">
-  <% if (box === 'inbox') { %>
-    <p>This is your message inbox. Your messages will appear here.</p>
-    <p>Please click on a message to view it, reply to it, or delete it.</p>
-  <% } else { %>
-    <p>These are your sent messages. Any messages you have sent will appear here.</p>
-    <p>You can view the full conversation and continue the message thread if you wish.</p>
-  <% } %>
-</div>
-
-<% if (req.query.sent) { %>
-  <div class="alert success">
-    <i class="fas fa-check-circle"></i> Your message was sent successfully!
-  </div>
-<% } %>
-
-
+    <div class="info-box">
+      <% if (box === 'inbox') { %>
+        <p>This is your inbox. Click a message to read, reply, or delete.</p>
+      <% } else { %>
+        <p>These are your sent messages. Click to view or continue the thread.</p>
+      <% } %>
+    </div>
 
     <% if (messages.length === 0) { %>
-      <p>
+      <p class="empty-state">
         <% if (box === 'sent') { %>
-          <i class="fas fa-paper-plane"></i> You have not sent any messages yet. When you do send messages, they will appear here.
+          <i class="fas fa-paper-plane"></i> You haven't sent any messages yet.
         <% } else { %>
-          <i class="fas fa-inbox"></i> You have not received any messages yet. Messages you receive will appear here.
+          <i class="fas fa-inbox"></i> You have no messages yet.
         <% } %>
       </p>
-      
     <% } else { %>
       <table>
         <thead>
@@ -74,16 +66,16 @@
             <th>Subject</th>
             <th><%= box === 'sent' ? 'To' : 'From' %></th>
             <th>Preview</th>
-            <th>Received At</th>
+            <th>Sent</th>
           </tr>
         </thead>
         <tbody>
           <% messages.forEach(msg => { %>
             <tr 
-            onclick="window.location='/student/messages/<%= msg.message_id %>'" 
-            style="cursor: pointer;" 
-            class="<%= !msg.is_read && box === 'inbox' ? 'unread' : '' %>">
-          
+              onclick="window.location='/student/messages/<%= msg.message_id %>'"
+              style="cursor: pointer;"
+              class="<%= !msg.is_read && box === 'inbox' ? 'unread' : '' %>"
+            >
               <td>
                 <% if (!msg.is_read && box === 'inbox') { %>
                   <span class="badge badge-warning"><i class="fas fa-circle"></i> Unread</span>
@@ -97,7 +89,6 @@
                   <span class="badge badge-warning" style="margin-left: 6px;">New</span>
                 <% } %>
               </td>
-              
               <td><%= box === 'sent' ? msg.recipient_name : msg.sender_name %></td>
               <td><div class="message-preview"><%= msg.body %></div></td>
               <td><%= new Date(msg.sent_at).toLocaleString() %></td>
@@ -106,13 +97,22 @@
         </tbody>
       </table>
     <% } %>
+
   </main>
 
   <footer>
     <p>University Portal © <%= currentYear %></p>
   </footer>
- 
 
-  
+  <script>
+    setTimeout(() => {
+      const alert = document.querySelector('.alert.success');
+      if (alert) {
+        alert.style.transition = 'opacity 0.5s ease';
+        alert.style.opacity = '0';
+        setTimeout(() => alert.remove(), 500);
+      }
+    }, 3000);
+  </script>
 </body>
 </html>

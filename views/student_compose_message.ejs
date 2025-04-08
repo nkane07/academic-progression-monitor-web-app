@@ -9,27 +9,44 @@
   <%- include("partials/banner", { req }) %>
 
   <main class="page-container">
-    <h2><i class="fas fa-paper-plane"></i> Contact Advisor</h2>
 
     <% if (req.query.sent) { %>
       <div class="alert success">
-        <i class="fas fa-check-circle"></i> Message sent successfully!
+        <i class="fas fa-check-circle"></i> Your message has been sent.
       </div>
     <% } %>
 
-    <form action="/student/messages/contact" method="POST">
+    <h2><i class="fas fa-paper-plane"></i> Contact Your Advisor</h2>
+
+    <form action="/student/messages/contact" method="POST" class="summary-card">
       <div class="form-group">
-        <label for="subject">Subject</label>
-        <input type="text" id="subject" name="subject" required>
+        <label for="subject">Subject:</label>
+        <input 
+          type="text" 
+          id="subject" 
+          name="subject" 
+          required 
+          placeholder="Enter subject"
+        >
       </div>
 
       <div class="form-group">
-        <label for="body">Message</label>
-        <textarea id="body" name="body" rows="6" required></textarea>
+        <label for="body">Message:</label>
+        <textarea 
+          id="body" 
+          name="body" 
+          required 
+          placeholder="Write your message here..."
+        ></textarea>
       </div>
 
-      <button type="submit" class="button"><i class="fas fa-paper-plane"></i> Send Message</button>
+      <div class="form-group">
+        <button type="submit" class="button">
+          <i class="fas fa-paper-plane"></i> Send Message
+        </button>
+      </div>
     </form>
+
   </main>
 
   <footer>

@@ -1,68 +1,83 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Student Profile</title>
-  
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="/styles.css">
-  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
+
 <body>
   <%- include("partials/banner", { req }) %>
 
-  <div class="page-header">
-    <h3>Student Profile</h3>
-</div>
+  <header class="page-header">
+    <h2>Student Profile</h2>
+  </header>
+
+  <main class="container">
+
+    <h3 class="profile-welcome">Welcome, <%= student.first_name %> <%= student.last_name %></h3>
   
-
-  <main>
-    <h2>Welcome, <%= student.first_name %> <%= student.last_name %></h2>
-
-    <!-- Profile Image with Tooltip -->
-    <img src="<%= student.profile_image ? student.profile_image : '/images/default-profile.png' %>" 
-         alt="Profile Image" 
-         width="150" 
-         height="150" 
-         style="border-radius: 50%;" 
-         title="Current Profile Picture">
-
-    <p><strong><i class="fa-solid fa-id-badge"></i> Student Number:</strong> <%= student.student_number %></p>
-    <p><strong><i class="fa-solid fa-diagram-project"></i> Pathway:</strong> <%= student.pathway %></p>
-
-    <!-- Level/Stage with Tooltip -->
-<p title="This is your current academic year/stage of study.">
-  <strong><i class="fa-solid fa-graduation-cap"></i> Level / Stage:</strong> <%= student.current_level %>
-</p>
-
-<!-- Progress Bar with Label -->
-<div class="progress-label">Year <%= currentYearDisplay %> Progress</div>
-
-<div class="progress-container">
-  <div class="progress-bar" 
-       style="width: <%= currentYearDisplay * 33.33 %>%; background-color: <%= currentYearDisplay == 1 ? '#fbbc04' : currentYearDisplay == 2 ? '#34a853' : '#0f9d58' %>;">
-    <span class="progress-text"><%= (currentYearDisplay * 33.33).toFixed(0) %>%</span>
-  </div>
-</div>
-
-
-
-    <p><strong><i class="fa-solid fa-envelope"></i> Email:</strong> <%= student.contact_email %></p>
-    <p><strong><i class="fa-solid fa-at"></i> Secondary Email:</strong> <%= student.secondary_email || 'None' %></p>
-    <p><strong><i class="fa-solid fa-phone"></i> Phone:</strong> <%= student.phone_number || 'None' %></p>
-
-    <h3><i class="fa-solid fa-user-pen"></i> Edit Profile Image & Secondary Email</h3>
-    <form action="/student/profile/update" method="POST" enctype="multipart/form-data">
-      <label for="profile_image">Upload Profile Image:</label><br>
-      <input type="file" id="profile_image" name="profile_image"><br><br>
-
-      <label for="secondary_email">Secondary Email:</label><br>
-      <input type="email" id="secondary_email" name="secondary_email" placeholder="<%= student.secondary_email %>"><br><br>
-
-      <button type="submit"><i class="fa-solid fa-floppy-disk"></i> Update</button>
+    <div class="summary-card profile-card">
+      <div class="profile-header">
+        <div class="profile-image">
+          <img 
+            src="<%= student.profile_image ? student.profile_image : '/images/default-profile.png' %>" 
+            alt="Profile Image" 
+            title="Current Profile Picture"
+          >
+        </div>
+  
+        <div class="profile-details">
+          <p><strong><i class="fa-solid fa-id-badge"></i> Student Number:</strong> <%= student.student_number %></p>
+          <p><strong><i class="fa-solid fa-diagram-project"></i> Pathway:</strong> <%= student.pathway %></p>
+          <p><strong><i class="fa-solid fa-graduation-cap"></i> Level / Stage:</strong> <%= student.current_level %></p>
+  
+          <div class="progress-label">Year <%= currentYearDisplay %> Progress</div>
+          <div class="progress-container">
+            <div class="progress-bar" 
+              style="width: <%= currentYearDisplay * 33.33 %>%; 
+                     background-color: <%= currentYearDisplay == 1 ? '#fbbc04' : currentYearDisplay == 2 ? '#34a853' : '#0f9d58' %>;">
+              <span class="progress-text"><%= (currentYearDisplay * 33.33).toFixed(0) %>%</span>
+            </div>
+          </div>
+  
+          <p><strong><i class="fa-solid fa-envelope"></i> Email:</strong> <%= student.contact_email %></p>
+          <p><strong><i class="fa-solid fa-at"></i> Secondary Email:</strong> <%= student.secondary_email || 'None' %></p>
+          <p><strong><i class="fa-solid fa-phone"></i> Phone:</strong> <%= student.phone_number || 'None' %></p>
+        </div>
+      </div>
+    </div>
+  
+    <form action="/student/profile/update" method="POST" enctype="multipart/form-data" class="summary-card">
+      <h4><i class="fa-solid fa-user-pen"></i> Edit Profile</h4>
+  
+      <div class="form-group">
+        <label for="profile_image">Upload Profile Image:</label>
+        <input type="file" id="profile_image" name="profile_image">
+      </div>
+  
+      <div class="form-group">
+        <label for="secondary_email">Secondary Email:</label>
+        <input 
+          type="email" 
+          id="secondary_email" 
+          name="secondary_email" 
+          placeholder="<%= student.secondary_email || 'Enter secondary email' %>"
+        >
+      </div>
+  
+      <div class="form-group">
+        <button type="submit" class="button">
+          <i class="fa-solid fa-floppy-disk"></i> Update
+        </button>
+      </div>
+      <p class="note"><em>Leave fields blank to keep your current email or image.</em></p>
     </form>
-
-    <p><em>Leave blank to keep your current image and email.</em></p>
+  
+   
   </main>
+  
 
   <footer>
     <p>University Portal © <%= currentYear %></p>

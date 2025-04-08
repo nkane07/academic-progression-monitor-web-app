@@ -1,92 +1,116 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Send Message</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
+
 <body>
   <%- include("partials/banner", { req }) %>
 
-  <main class="page-container">
-    <h1><i class="fas fa-paper-plane"></i> Send Message to Student</h1>
+    <main class="page-container">
+      <h1><i class="fas fa-paper-plane"></i> Send Message to Student</h1>
 
-    
-
-    <% if (req.query.sent) { %>
-      <div id="successMessage" class="alert success">
-        <i class="fas fa-check-circle"></i> Message sent successfully!
-      </div>
-    <% } %>
-
-    <div class="summary-card">
-      <form action="/admin/messages/send" method="POST">
-        <fieldset style="margin-bottom: 1.5rem;">
-          <legend><strong>Target Group</strong></legend>
-
-          <div class="form-group">
-            <label for="filter_type">Send to:</label>
-            <select name="filter_type" id="filter_type" required onchange="toggleStudentDropdown(this.value)">
-              <option value="individual">Individual Student</option>
-              <option value="group">Group (by pathway + year)</option>
-            </select>
-          </div>
-
-          <div id="studentSelect" class="form-group">
-            <label for="recipient_id">Select Student:</label>
-            <select name="recipient_id">
-              <% students.forEach(s => { %>
-                <option value="<%= s.user_id %>"><%= s.first_name %> <%= s.last_name %> (ID: <%= s.student_number %>)</option>
-              <% }) %>
-            </select>
-          </div>
-
-          <div id="groupSelect" class="form-group" style="display: none;">
-            <label for="pathway">Pathway:</label>
-            <select name="pathway">
-              <option value="Information Systems">Information Systems</option>
-              <option value="Business Data Analytics">Business Data Analytics</option>
-            </select>
-
-            <label for="year">Year:</label>
-            <select name="year">
-              <option value="1">Year 1</option>
-              <option value="2">Year 2</option>
-              <option value="3">Year 3</option>
-            </select>
-          </div>
-        </fieldset>
-
-        <div class="form-group">
-          <label for="subject">Subject:</label>
-          <input type="text" name="subject" id="subject" required>
+      <% if (req.query.sent) { %>
+        <div id="successMessage" class="alert success">
+          <i class="fas fa-check-circle"></i> Message sent successfully!
         </div>
+        <% } %>
 
-        <div class="form-group">
-          <label for="body">Message:</label>
-          <textarea name="body" id="body" rows="5" required></textarea>
-        </div>
+          <div class="summary-card">
+            <form action="/admin/messages/send" method="POST">
 
-        <button type="submit" class="button"><i class="fas fa-paper-plane"></i> Send</button>
-      </form>
-    </div>
-  </main>
+              <!-- group selection -->
+              <fieldset class="form-section">
+                <legend><strong>Target Group</strong></legend>
 
-  <script>
-    function toggleStudentDropdown(type) {
-      document.getElementById('studentSelect').style.display = (type === 'individual') ? 'block' : 'none';
-      document.getElementById('groupSelect').style.display = (type === 'group') ? 'block' : 'none';
-    }
+                <!-- Type of message -->
+                <div class="form-group">
+                  <label for="filter_type">Send to:</label>
+                  <select name="filter_type" id="filter_type" onchange="toggleRecipientOptions()" required>
+                    <option value="individual">Individual Student</option>
+                    <option value="group">Group (by pathway + year)</option>
+                  </select>
+                </div>
 
-    window.onload = () => toggleStudentDropdown(document.getElementById('filter_type').value);
+                <!-- Student -->
+                <div id="studentSelect" class="form-group">
+                  <label for="recipient_id">Select Student:</label>
+                  <select name="recipient_id">
+                    <% students.forEach(student=> { %>
+                      <option value="<%= student.user_id %>">
+                        <%= student.first_name %>
+                          <%= student.last_name %> (ID: <%= student.student_number %>)
+                      </option>
+                      <% }) %>
+                  </select>
+                </div>
 
-    setTimeout(() => {
-      const msg = document.getElementById('successMessage');
-      if (msg) {
-        msg.style.transition = 'opacity 0.5s ease';
-        msg.style.opacity = '0';
-        setTimeout(() => msg.remove(), 500);
+                <!-- pathway -->
+                <div id="groupSelect" class="form-group" style="display: none;">
+                  <label for="pathway">Pathway:</label>
+                  <select name="pathway">
+                    <option value="Information Systems">Information Systems</option>
+                    <option value="Business Data Analytics">Business Data Analytics</option>
+                  </select>
+
+                  <label for="year">Year:</label>
+                  <select name="year">
+                    <option value="1">Year 1</option>
+                    <option value="2">Year 2</option>
+                    <option value="3">Year 3</option>
+                  </select>
+                </div>
+              </fieldset>
+
+
+              <!-- Message Details -->
+              <div class="form-section">
+                <div class="form-group">
+                  <label for="subject">Subject:</label>
+                  <input type="text" name="subject" id="subject" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="body">Message:</label>
+                  <textarea name="body" id="body" rows="5" required></textarea>
+                </div>
+              </div>
+
+              <button type="submit" class="button">
+                <i class="fas fa-paper-plane"></i> Send
+              </button>
+            </form>
+          </div>
+    </main>
+
+    <footer>
+      <p>University Portal © <%= currentYear %>
+      </p>
+    </footer>
+
+    <script>
+
+      function toggleRecipientOptions() {
+        const selected = document.getElementById('filter_type').value;
+        document.getElementById('studentSelect').style.display = selected === 'individual' ? 'block' : 'none';
+        document.getElementById('groupSelect').style.display = selected === 'group' ? 'block' : 'none';
       }
-    }, 4000);
-  </script>
+
+      window.onload = () => {
+        toggleRecipientOptions();
+
+        const banner = document.getElementById('successMessage');
+        if (banner) {
+          setTimeout(() => {
+            banner.style.transition = 'opacity 0.5s ease';
+            banner.style.opacity = '0';
+            setTimeout(() => banner.remove(), 500);
+          }, 4000);
+        }
+      };
+    </script>
 </body>
+
 </html>

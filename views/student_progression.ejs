@@ -1,77 +1,83 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Progression Status</title>
-    
-   
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="/styles.css">
-  </head>
-  
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Progression Status</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
 <body>
   <%- include("partials/banner", { req }) %>
 
-  <div class="page-header">
-    <h3><i class="fas fa-user-graduate"></i> Student Progression</h3>
-  </div>
+  <main class="page-container">
+    <h2 class="section-title">Progression Status</h2>
 
-  <main>
-    <h2><i class="fas fa-chart-line"></i> Progression Statistics</h2>
+    <section class="summary-card">
+      <h3>Overview</h3>
+      <p><strong>Academic Stage:</strong> Year <%= currentLevel.replace('L', '') %></p>
+      <p><strong>Total Credits:</strong> <%= totalCredits %> / <%= requiredCredits %></p>
 
-    <h3><i class="fas fa-clipboard-check"></i> Progression Summary</h3>
-    <p><strong><i class="fas fa-graduation-cap"></i> Level / Stage:</strong> Year <%= currentLevel.replace('L', '') %></p>
-
-    
-    <p><strong><i class="fas fa-coins"></i> Total Credits:</strong> <%= totalCredits %> / <%= requiredCredits %></p>
-    <div class="progress-container">
-      <div class="progress-bar" style="width: <%= Math.min((totalCredits / requiredCredits) * 100, 100) %>%; background-color: <%= totalCredits >= requiredCredits ? '#28a745' : '#ffc107' %>;">
-        <span class="progress-text"><%= Math.round((totalCredits / requiredCredits) * 100) %>%</span>
+      <div class="progress-container">
+        <div class="progress-bar" style="width: <%= Math.min((totalCredits / requiredCredits) * 100, 100) %>%; background-color: <%= totalCredits >= requiredCredits ? '#28a745' : '#ffc107' %>;">
+          <span class="progress-text"><%= Math.round((totalCredits / requiredCredits) * 100) %>%</span>
+        </div>
       </div>
-    </div>
 
-    
-    <p><strong><i class="fas fa-percent"></i> Average Grade:</strong> <%= averageGrade %> (Min 40%)</p>
-    <div class="progress-container">
-      <div class="progress-bar" style="width: <%= Math.min(averageGrade, 100) %>%; background-color: <%= averageGrade >= 40 ? '#28a745' : '#dc3545' %>;">
-        <span class="progress-text"><%= Math.round(averageGrade) %>%</span>
+      <p><strong>Average Grade:</strong> <%= averageGrade %>% (Minimum 40%)</p>
+      <div class="progress-container">
+        <div class="progress-bar" style="width: <%= Math.min(averageGrade, 100) %>%; background-color: <%= averageGrade >= 40 ? '#28a745' : '#dc3545' %>;">
+          <span class="progress-text"><%= Math.round(averageGrade) %>%</span>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <p><strong><i class="fas fa-times-circle"></i> Failed Modules:</strong> <%= failedModules.join(', ') || 'None' %></p>
+    <section class="summary-card">
+      <h3>Module Outcomes</h3>
+      <p><strong>Failed Modules:</strong> <%= failedModules.length ? failedModules.join(', ') : 'None' %></p>
+      <p><strong>Modules Requiring Resit:</strong> <%= resitModules.length ? resitModules.join(', ') : 'None' %></p>
+    </section>
 
+    <section class="summary-card">
+      <h3>Progression Decision</h3>
     
-    <p><strong><i class="fas fa-undo-alt"></i> Modules requiring resit:</strong> <%= resitModules.join(', ') || 'None' %></p>
-
+      <%
+        const isPositiveDecision = [
+          'Eligible to Progress',
+          'Progression Approved',
+          'Eligible'
+        ].some(keyword => decision.includes(keyword));
+      %>
     
-    <h3><i class="fas fa-balance-scale"></i> Progression Decision <i class="fas fa-info-circle" title="Based on academic rules and module performance."></i></h3>
-    <p>
-      <strong class="<%= decision.includes('Progress') || decision.includes('Eligible') ? 'progression-decision-pass' : 'progression-decision-fail' %>">
-        <%= decision %>
-      </strong>
-    </p>
-
-  
-    <% if (adminNote) { %>
-      <p class="admin-note">
-        <i class="fas fa-user-shield"></i> Decision overridden by administrator.
+      <p>
+        <strong class="<%= isPositiveDecision ? 'progression-decision-pass' : 'progression-decision-fail' %>">
+          <%= decision %>
+        </strong>
       </p>
-    <% } %>
+    
+      <% if (adminNote) { %>
+        <p class="admin-note">
+          <i class="fas fa-user-shield"></i> This decision has been manually overridden by an administrator.
+        </p>
+      <% } %>
+    </section>
+    
 
-    <a href="/student/messages/contact" class="button">
-      <i class="fas fa-user-headset"></i> Contact Advisor
-    </a>
+    <section class="summary-card">
+      <a href="/student/messages/contact" class="button"><i class="fas fa-envelope"></i> Contact Advisor</a>
 
-    <details class="progression-details">
-      <summary><i class="fas fa-list-alt"></i> Progression Requirements</summary>
-      <ul>
-        <li><i class="fas fa-check-circle"></i> Earn at least 100+ credits to progress.</li>
-        <li><i class="fas fa-check-circle"></i> Maintain a minimum average of 40%.</li>
-        <li><i class="fas fa-check-circle"></i> Pass all core modules at your current level.</li>
-        <li><i class="fas fa-exclamation-triangle"></i> Only one resit per module allowed per year.</li>
-        <li><i class="fas fa-times-circle"></i> Four attempts maximum per module.</li>
-        <li><i class="fas fa-exclamation-circle"></i> All Year 1 (Level 01) modules must be passed before final year.</li>
-      </ul>
-    </details>
+      <details class="progression-details" style="margin-top: 2rem;">
+        <summary><strong>Progression Rules</strong></summary>
+        <ul>
+          <li>Minimum of 100 credits required for progression to next year</li>
+          <li>Average grade must be at least 40%</li>
+          <li>All core modules must be passed</li>
+          <li>One resit attempt allowed per module per year</li>
+          <li>No more than 4 total attempts per module</li>
+          <li>Year 1 modules must be completed before final year progression</li>
+        </ul>
+      </details>
+    </section>
   </main>
 
   <footer>

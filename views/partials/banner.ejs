@@ -1,8 +1,9 @@
 <div class="banner">
   <div class="banner-left">
-    <img src="/icons/bannerlogo.png" alt="Logo" class="banner-logo">
+    <img src="/icons/bannerlogo.png" alt="Logo" class="banner-logo" />
     <span class="banner-title">Academic Portal</span>
   </div>
+
   <div class="banner-nav">
     <% if (req.session.userRole === 'admin') { %>
       <a href="/admin" class="nav-link">Dashboard</a>

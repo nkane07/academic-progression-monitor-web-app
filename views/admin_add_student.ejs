@@ -2,60 +2,62 @@
 <html>
 <head>
   <title>Add New Student</title>
-  
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+
   <%- include("partials/banner", { req }) %>
 
   <main class="page-container">
+    <h1>Add New Student</h1>
+
     <% if (req.query.added) { %>
       <div class="alert success">
-        ✅ Student was successfully added.
+      Student was successfully added.
       </div>
     <% } %>
-    
-    <h1>Add New Student</h1>
-  
+
     <form action="/admin/students/new" method="POST">
+
       <div class="form-group">
         <label for="first_name">First Name:</label>
-        <input name="first_name" id="first_name" required />
+        <input id="first_name" name="first_name" required />
       </div>
-  
+
       <div class="form-group">
         <label for="last_name">Last Name:</label>
-        <input name="last_name" id="last_name" required />
+        <input id="last_name" name="last_name" required />
       </div>
-  
+
       <div class="form-group">
         <label for="pathway">Pathway:</label>
-        <select name="pathway" id="pathway">
+        <select id="pathway" name="pathway">
           <option>Information Systems</option>
           <option>Business Data Analytics</option>
         </select>
       </div>
-  
+
       <div class="form-group">
         <label>Generated Student Number:</label>
         <div id="studentNumberPreview" class="student-number-preview"></div>
-        <input type="hidden" name="student_number" id="studentNumberInput">
+        <input type="hidden" id="studentNumberInput" name="student_number" />
       </div>
-      
-  
+
       <div class="form-group">
         <label for="level">Level / Year:</label>
-        <select name="level" id="level">
+        <select id="level" name="level">
           <option>Year 1</option>
           <option>Year 2</option>
           <option>Year 3</option>
         </select>
       </div>
-  
-      <button class="button" type="submit">Add Student</button>
+
+      <div class="form-group">
+        <button type="submit" class="button">Add Student</button>
+      </div>
+
     </form>
   </main>
-  
 
   <footer>
     <p>University Portal © <%= currentYear %></p>
@@ -85,26 +87,19 @@
     }
 
     pathwaySelect.addEventListener("change", updatePreview);
-    window.onload = updatePreview;
-  </script>
-  <script>
-    // Automatically fade out the success banner after 4 seconds
     window.onload = () => {
+      updatePreview();
+
       const banner = document.getElementById("successBanner");
       if (banner) {
         setTimeout(() => {
           banner.style.transition = "opacity 0.5s ease-out";
           banner.style.opacity = 0;
-  
-          // Optional: remove it from DOM after fade
           setTimeout(() => banner.remove(), 500);
         }, 4000);
       }
-  
-      // Update student number preview on page load
-      updatePreview();
     };
   </script>
-  
+
 </body>
 </html>

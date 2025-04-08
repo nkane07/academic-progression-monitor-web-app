@@ -7,141 +7,120 @@
 <body>
   <%- include("partials/banner") %>
 
+  <div class="page-header">
+    <h1>Student Management</h1>
+    <a href="/admin/students/new" class="button">Add New Student</a>
+  </div>
 
+  <main class="container">
 
-  <header>
-    <div class="page-header">
-      <h1>Student Management</h1>
-      <a href="/admin/students/new" class="button">Add New Student</a>
-    </div>
-    
-  </header>
-
-  <main>
+    <!-- messages banners -->
     <% if (req.query.deleted) { %>
-      <div id="deleteBanner"
-        style="background:#f8d7da; color:#721c24; padding:1rem; margin-bottom:1rem; border-radius:5px;">
+      <div id="deleteBanner" class="alert error">
         <i class="fas fa-check-circle"></i> Student record deleted successfully!
       </div>
+    <% } %>
+
+    <% if (req.query.added) { %>
+      <div id="addBanner" class="alert success">
+        <i class="fas fa-check-circle"></i> New student added successfully!
+      </div>
+    <% } %>
+
+    <!-- Search -->
+    <form method="GET" action="/admin/students" class="search-form">
+      <div class="input-wrapper">
+        <input 
+          type="text" 
+          name="search" 
+          placeholder="Search by student name..." 
+          value="<%= search || '' %>" 
+          oninput="document.getElementById('resetSearch').style.display = this.value ? 'block' : 'none';"
+        />
+        <button 
+          type="button" 
+          id="resetSearch" 
+          onclick="window.location.href='/admin/students'" 
+          class="reset-icon"
+          style="<%= search ? 'display:block' : 'display:none' %>"
+        >✖</button>
+      </div>
+      <button type="submit" class="button">Search</button>
+    </form>
+
+    <!-- Student table -->
+    <h3>All Students</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Student Number</th>
+          <th>Pathway</th>
+          <th>Level / Year</th>
+          <th>Student Summary</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% students.forEach(s => { %>
+          <tr>
+            <td><%= s.first_name %> <%= s.last_name %></td>
+            <td><%= s.student_number %></td>
+            <td><%= s.pathway %></td>
+            <td><%= s.level %></td>
+            <td><a href="/admin/students/<%= s.user_id %>/summary" class="button">Summary</a></td>
+            <td><a href="/admin/students/<%= s.user_id %>" class="button">Manage</a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <p class="page-label">Page <%= currentPage %> of <%= totalPages %></p>
+    <div class="pagination">
+      <% if (currentPage > 1) { %>
+        <a href="/admin/students?page=<%= currentPage - 1 %>" class="page-button">Previous</a>
       <% } %>
 
-        <% if (req.query.added) { %>
-          <div id="addBanner"
-            style="background:#d4edda; color:#155724; padding:1rem; margin-bottom:1rem; border-radius:5px;">
-            <i class="fas fa-check-circle"></i> New student added successfully!
-          </div>
-          <% } %>
+      <% 
+        const maxVisible = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+        if (endPage - startPage < maxVisible - 1) {
+          startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+      %>
 
-          <form method="get" action="/admin/students" class="search-form">
-            <div class="input-wrapper">
-              <input 
-                type="text" 
-                name="search" 
-                placeholder="Search by student name..." 
-                value="<%= search || '' %>" 
-                oninput="document.getElementById('resetSearch').style.display = this.value ? 'block' : 'none';"
-              />
-              <button 
-                type="button" 
-                id="resetSearch" 
-                onclick="window.location.href='/admin/students'" 
-                class="reset-icon"
-                style="<%= search ? 'display:block' : 'display:none' %>"
-              >✖</button>
-            </div>
-            <button type="submit" class="button">Search</button>
-          </form>
-          
-          
-          
-            <h3>All Students</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Student Number</th>
-                  <th>Pathway</th>
-                  <th>Level / Year</th>
-                  <th>Student Summary</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% students.forEach(s=> { %>
-                  <tr>
-                    <td>
-                      <%= s.first_name %>
-                        <%= s.last_name %>
-                    </td>
-                    <td>
-                      <%= s.student_number %>
-                    </td>
-                    <td>
-                      <%= s.pathway %>
-                    </td>
-                    <td>
-                      <%= s.level %>
-                    </td>
-                    <td>
-                      <a href="/admin/students/<%= s.user_id %>/summary" class="button">Summary</a>
-                    </td>
+      <% for (let i = startPage; i <= endPage; i++) { %>
+        <a href="/admin/students?page=<%= i %>" class="page-button <%= i === currentPage ? 'active' : '' %>">
+          <%= i %>
+        </a>
+      <% } %>
 
-
-                    <td>
-                      <a href="/admin/students/<%= s.user_id %>" class="button">Manage</a>
-                    </td>
-                  </tr>
-                  <% }) %>
-              </tbody>
-
-
-            </table>
-
-            <p class="page-label">Page <%= currentPage %> of <%= totalPages %>
-            </p>
-
-
-            <div class="pagination">
-              <% if (currentPage> 1) { %>
-                <a href="/admin/students?page=<%= currentPage - 1 %>" class="page-button">Previous</a>
-                <% } %>
-
-                  <% for (let i=1; i <=totalPages; i++) { %>
-                    <a href="/admin/students?page=<%= i %>"
-                      class="page-button <%= i === currentPage ? ' active' : '' %>">
-                      <%= i %>
-                    </a>
-                    <% } %>
-
-                      <% if (currentPage < totalPages) { %>
-                        <a href="/admin/students?page=<%= currentPage + 1 %>" class="page-button">Next</a>
-                        <% } %>
-            </div>
-
+      <% if (currentPage < totalPages) { %>
+        <a href="/admin/students?page=<%= currentPage + 1 %>" class="page-button">Next</a>
+      <% } %>
+    </div>
 
   </main>
-  <script>
-    setTimeout(() => {
-      const banner = document.getElementById('deleteBanner');
-      if (banner) {
-        banner.style.transition = 'opacity 0.5s ease';
-        banner.style.opacity = '0';
-        setTimeout(() => banner.remove(), 500);
-      }
-    }, 4000);
-  </script>
-  <script>
-    setTimeout(() => {
-      const banner = document.getElementById('addBanner');
-      if (banner) {
-        banner.style.transition = 'opacity 0.5s ease';
-        banner.style.opacity = '0';
-        setTimeout(() => banner.remove(), 500);
-      }
-    }, 4000); 
-  </script>
 
+  <footer>
+    <p>University Portal © <%= currentYear %></p>
+  </footer>
+
+  
+  <script>
+    ['deleteBanner', 'addBanner'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        setTimeout(() => {
+          el.style.transition = 'opacity 0.5s ease';
+          el.style.opacity = '0';
+          setTimeout(() => el.remove(), 500);
+        }, 4000);
+      }
+    });
+  </script>
 
 </body>
-
 </html>

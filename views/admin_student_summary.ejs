@@ -2,26 +2,23 @@
 <html>
 <head>
   <title>Student Summary</title>
-  
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
 </head>
 <body>
   <%- include("partials/banner") %>
 
-
   <div class="page-header">
     <h1>Student Summary</h1>
   </div>
-  
 
   <main class="container">
-
+    
     <h3><%= student.first_name %> <%= student.last_name %></h3>
     <p><strong>Student Number:</strong> <%= student.student_number %></p>
     <p><strong>Pathway:</strong> <%= student.pathway %></p>
 
+    <!-- grades -->
     <h3>Module Grades</h3>
     <table>
       <thead>
@@ -45,98 +42,114 @@
         <% }) %>
       </tbody>
     </table>
+
+    <!-- progress summary -->
     <h3><i class="fas fa-clipboard-check"></i> Progression Summary</h3>
 
-<p><strong><i class="fas fa-coins"></i> Total Credits:</strong> <%= totalCredits %> / <%= requiredCredits %></p>
-<div class="progress-container">
-  <div class="progress-bar" style="width: <%= Math.min((totalCredits / requiredCredits) * 100, 100) %>%; background-color: <%= totalCredits >= requiredCredits ? '#28a745' : '#ffc107' %>;">
-    <span class="progress-text"><%= Math.round((totalCredits / requiredCredits) * 100) %>%</span>
-  </div>
-</div>
-
-<p><strong><i class="fas fa-percent"></i> Average Grade:</strong> <%= averageGrade %>%</p>
-<div class="progress-container">
-  <div class="progress-bar" style="width: <%= Math.min(averageGrade, 100) %>%; background-color: <%= averageGrade >= 40 ? '#28a745' : '#dc3545' %>;">
-    <span class="progress-text"><%= Math.round(averageGrade) %>%</span>
-  </div>
-</div>
-
-<p><strong><i class="fas fa-times-circle"></i> Failed Modules:</strong> <%= failedModules.length ? failedModules.join(', ') : 'None' %></p>
-<p><strong><i class="fas fa-undo-alt"></i> Modules Requiring Resit:</strong> <%= resitModules.length ? resitModules.join(', ') : 'None' %></p>
-
-<% if (coreFails.length > 0) { %>
-  <p><strong><i class="fas fa-exclamation-circle"></i> Failed Core Modules:</strong> 
-    <% coreFails.forEach((mod, i) => { %>
-      <span class="failed-core-module"><%= mod %></span><%= i !== coreFails.length - 1 ? ', ' : '' %>
-    <% }) %>
-  </p>
-<% } %>
-
-<% if (exceededAttempts.length > 0) { %>
-  <p><strong><i class="fas fa-redo-alt"></i> Modules with 4+ Fails:</strong> <%= exceededAttempts.join(', ') %></p>
-<% } %>
-
-<p>
-  <strong><i class="fas fa-balance-scale"></i> Final Progression Decision:</strong> 
-  <span class="<%= decision.includes('Eligible') ? 'progression-decision-pass' : 'progression-decision-fail' %>">
-    <%= decision %>
-  </span>
-</p>
-
-<% if (manualDecision) { %>
-  <p><strong><i class="fas fa-user-shield"></i> Overridden Decision:</strong> 
-    <span class="progression-decision-fail"><%= manualDecision %></span>
-  </p>
-<% } %>
-
-  
-  <hr>
-  <h3>Admin Override</h3>
-  <form method="POST" action="/admin/students/<%= student.user_id %>/override-decision" class="form-group">
-    <label for="manual_decision">Set Manual Progression Decision:</label>
-    <select name="manual_decision" id="manual_decision" required>
-      <option value="">-- Select Decision --</option>
-      <option value="Eligible to Progress" <%= manualDecision === "Eligible to Progress" ? "selected" : "" %>>Eligible to Progress</option>
-      <option value="Progression Denied - Mitigation" <%= manualDecision === "Progression Denied" ? "selected" : "" %>>Progression Denied - Mitigation</option>
-      <option value="Repeat Year with Support" <%= manualDecision === "Repeat Year" ? "selected" : "" %>>Repeat Year with Support</option>
-      <option value="Deferred - Medical Evidence" <%= manualDecision === "Deferred - Valid Medical Evidence" ? "selected" : "" %>>Deferred - Medical Evidence</option>
-      <option value="Progression Approved (Override)" <%= manualDecision === "Progression Approved" ? "selected" : "" %>>Progression Approved (Override)</option>
-    </select>
-    <button class="button" type="submit">Override</button>
-  </form>
-  
-  <h3>Progression History</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Academic Year</th>
-        <th>Decision</th>
-        <th>Date</th>
-        <th>Notes</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% progressionHistory.forEach(d => { %>
-
-        <tr>
-          <td><%= d.academic_year %></td>
-          <td><%= d.decision_text %></td>
-          <td><%= new Date(d.decision_date).toLocaleDateString() %></td>
-          <td><%= d.notes || '—' %></td>
-        </tr>
-      <% }) %>
-    </tbody>
-  </table>
-
-  <% if (progressionHistory.length === 0) { %>
-    <p class="no-history-message">
-      No progression decisions recorded yet for this student.
+    <p>
+      <strong><i class="fas fa-coins"></i> Total Credits:</strong>
+      <%= totalCredits %> / <%= requiredCredits %>
     </p>
-  <% } %>
-  
-  
-  
+    <div class="progress-container">
+      <div class="progress-bar" style="width: <%= Math.min((totalCredits / requiredCredits) * 100, 100) %>%; background-color: <%= totalCredits >= requiredCredits ? '#28a745' : '#ffc107' %>;">
+        <span class="progress-text"><%= Math.round((totalCredits / requiredCredits) * 100) %>%</span>
+      </div>
+    </div>
 
+    <p>
+      <strong><i class="fas fa-percent"></i> Average Grade:</strong>
+      <%= averageGrade %>%
+    </p>
+    <div class="progress-container">
+      <div class="progress-bar" style="width: <%= Math.min(averageGrade, 100) %>%; background-color: <%= averageGrade >= 40 ? '#28a745' : '#dc3545' %>;">
+        <span class="progress-text"><%= Math.round(averageGrade) %>%</span>
+      </div>
+    </div>
+
+    <p>
+      <strong><i class="fas fa-times-circle"></i> Failed Modules:</strong>
+      <%= failedModules.length ? failedModules.join(', ') : 'None' %>
+    </p>
+
+    <p>
+      <strong><i class="fas fa-undo-alt"></i> Modules Requiring Resit:</strong>
+      <%= resitModules.length ? resitModules.join(', ') : 'None' %>
+    </p>
+
+    <% if (coreFails.length > 0) { %>
+      <p>
+        <strong><i class="fas fa-exclamation-circle"></i> Failed Core Modules:</strong>
+        <%= coreFails.join(', ') %>
+      </p>
+    <% } %>
+
+    <% if (exceededAttempts.length > 0) { %>
+      <p>
+        <strong><i class="fas fa-redo-alt"></i> Modules with 4+ Fails:</strong>
+        <%= exceededAttempts.join(', ') %>
+      </p>
+    <% } %>
+
+    <!-- final progression decision -->
+    <p>
+      <strong><i class="fas fa-balance-scale"></i> Final Progression Decision:</strong>
+      <span class="<%= decision.includes('Eligible') ? 'progression-decision-pass' : 'progression-decision-fail' %>">
+        <%= decision %>
+      </span>
+    </p>
+
+    <% if (manualDecision) { %>
+      <p>
+        <strong><i class="fas fa-user-shield"></i> Overridden Decision:</strong>
+        <span class="progression-decision-fail"><%= manualDecision %></span>
+      </p>
+    <% } %>
+
+    <hr>
+
+    <!-- Admin override decision -->
+    <h3>Admin Override</h3>
+    <form method="POST" action="/admin/students/<%= student.user_id %>/override-decision" class="form-group">
+      <label for="manual_decision">Set Manual Progression Decision:</label>
+      <select name="manual_decision" id="manual_decision" required>
+        <option value="">-- Select Decision --</option>
+        <option value="Eligible to Progress" <%= manualDecision === "Eligible to Progress" ? "selected" : "" %>>Eligible to Progress</option>
+        <option value="Progression Denied - Mitigation" <%= manualDecision === "Progression Denied - Mitigation" ? "selected" : "" %>>Progression Denied - Mitigation</option>
+        <option value="Repeat Year with Support" <%= manualDecision === "Repeat Year with Support" ? "selected" : "" %>>Repeat Year with Support</option>
+        <option value="Deferred - Medical Evidence" <%= manualDecision === "Deferred - Medical Evidence" ? "selected" : "" %>>Deferred - Medical Evidence</option>
+        <option value="Progression Approved (Override)" <%= manualDecision === "Progression Approved (Override)" ? "selected" : "" %>>Progression Approved (Override)</option>
+      </select>
+      <button class="button" type="submit">Override</button>
+    </form>
+
+    <!-- progression history -->
+    <h3>Progression History</h3>
+    <% if (progressionHistory.length > 0) { %>
+      <table>
+        <thead>
+          <tr>
+            <th>Academic Year</th>
+            <th>Decision</th>
+            <th>Date</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% progressionHistory.forEach(d => { %>
+            <tr>
+              <td><%= d.academic_year %></td>
+              <td><%= d.decision_text %></td>
+              <td><%= new Date(d.decision_date).toLocaleDateString() %></td>
+              <td><%= d.notes || '—' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <p class="no-history-message">
+        No progression decisions recorded yet for this student.
+      </p>
+    <% } %>
   </main>
 
   <footer>

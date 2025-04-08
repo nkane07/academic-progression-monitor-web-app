@@ -4,7 +4,7 @@ body.login-page {
   margin: 0;
   padding: 0;
   font-family: 'Segoe UI', sans-serif;
-  padding-top: 70px; /* offset for fixed banner */
+  padding-top: 70px; 
   min-height: 100vh;
   display: flex;
   justify-content: center;
@@ -66,13 +66,15 @@ body.login-page {
   color: #666;
 }
 
-/* Form labels and fields */
-.login-form label {
-  display: block;
-  margin-bottom: 0.25rem;
-  font-weight: 600;
-  margin-top: 1rem;
-  font-size: 1rem;
+.login-form {
+  width: 100%;
+  max-width: 400px; 
+  margin: 0 auto; 
+}
+
+.login-form .form-group {
+  width: 100%;
+  margin-bottom: 1.5rem;
 }
 
 .login-form input[type="text"],
@@ -86,9 +88,8 @@ body.login-page {
   box-sizing: border-box;
 }
 
-/* Login button */
 .login-form button {
-  width: 100%;
+  width: 100%; 
   margin-top: 2rem;
   background-color: #b31b1b;
   color: white;
@@ -104,6 +105,7 @@ body.login-page {
 .login-form button:hover {
   background-color: #8f1a1a;
 }
+
 
 /* Error message */
 .error-message {
@@ -417,7 +419,43 @@ tr:hover {
   padding: 20px;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
   margin-bottom: 30px;
+  width: 100%;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
 }
+
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.profile-header {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.profile-image img {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.profile-details {
+  flex: 1;
+}
+
+.profile-welcome {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+
 
 .info-box {
   background: #f9f9f9;
@@ -579,6 +617,10 @@ details.progression-details ul {
   margin-bottom: 1rem;
 }
 
+.form-section {
+  margin-top: 2rem;
+}
+
 .input-wrapper {
   flex: 1; 
   min-width: 250px;
@@ -721,6 +763,11 @@ form select {
   outline: none;
 }
 
+#subject {
+  margin-top: 1rem;
+}
+
+
 .button {
   background-color: #b40000;
   padding: 10px 20px;
@@ -756,7 +803,7 @@ form select {
 
 /* Chart Container */
 .chart-container {
-  max-width: 700px;
+  max-width: 1000px;
   height: 400px;
   margin: 2rem auto;
   padding: 1rem;
@@ -764,6 +811,7 @@ form select {
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
+
 
 canvas#progressionChart {
   width: 100% !important;
@@ -797,6 +845,14 @@ canvas#progressionChart {
 
 .admin-module-search input[type="text"] {
   width: 300px; 
+}
+
+.tab-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem; 
 }
 
 

@@ -5,6 +5,7 @@
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+
   <%- include("partials/banner", { req }) %>
 
   <main class="page-container">
@@ -12,47 +13,48 @@
 
     <% if (req.query.added) { %>
       <div id="successBanner" class="alert success">
-        ✅ Module added successfully!
+        Module added successfully!
       </div>
     <% } %>
 
     <% if (req.query.duplicate) { %>
-      <div class="alert error">A module with this code already exists.</div>
+      <div class="alert error">
+        A module with this code already exists.
+      </div>
     <% } %>
 
     <form action="/admin/modules/new" method="post" class="form-section">
+
       <div class="form-group">
         <label for="module_name">Module Name:</label>
-        <input type="text" name="module_name" id="module_name" required>
+        <input type="text" id="module_name" name="module_name" required>
       </div>
 
       <div class="form-group">
         <label for="module_code">Module Code:</label>
-        <input type="text" name="module_code" id="module_code" required>
+        <input type="text" id="module_code" name="module_code" required>
       </div>
 
       <div class="form-group">
         <label for="credit_value">Credit Value:</label>
         <input 
-  type="number" 
-  name="credit_value" 
-  id="credit_value" 
-  min="0" 
-  max="120" 
-  step="1" 
-  required
->
-
+          type="number" 
+          id="credit_value" 
+          name="credit_value" 
+          min="0" 
+          max="120" 
+          step="1" 
+          required>
       </div>
 
       <div class="form-group">
         <label for="degree_programme_code">Pathway Code (e.g. IFSY, BSAS):</label>
-        <input type="text" name="degree_programme_code" id="degree_programme_code" required>
+        <input type="text" id="degree_programme_code" name="degree_programme_code" required>
       </div>
 
       <div class="form-group">
         <label for="semester">Semester:</label>
-        <select name="semester" id="semester" required>
+        <select id="semester" name="semester" required>
           <option value="">-- Select Semester --</option>
           <option value="AUT">Autumn</option>
           <option value="SPR">Spring</option>
@@ -63,6 +65,7 @@
       <div class="form-group">
         <button type="submit" class="button">Add Module</button>
       </div>
+
     </form>
   </main>
 
@@ -80,5 +83,6 @@
       }
     }, 4000);
   </script>
+
 </body>
 </html>

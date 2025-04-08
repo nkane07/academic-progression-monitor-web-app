@@ -7,68 +7,71 @@
 <body>
   <%- include("partials/banner") %>
 
-
   <div class="page-header">
     <h2>Upload Grades (CSV)</h2>
-    
   </div>
 
-  <main>
-    <form action="/admin/upload-grades" method="POST" enctype="multipart/form-data">
-      <label for="csvFile">Select CSV File:</label>
-      <input type="file" name="csvFile" accept=".csv" required />
-    
+  <main class="container">
+
+    <!-- Upload form -->
+    <form action="/admin/upload-grades" method="POST" enctype="multipart/form-data" class="form-section">
+      <div class="form-group">
+        <label for="csvFile">Select CSV File:</label>
+        <input type="file" name="csvFile" id="csvFile" accept=".csv" required>
+      </div>
+
       <p class="admin-note">
-        <i class="fas fa-info-circle"></i> Upload a CSV with columns: <strong>student_id, module_code, grade, result, credits</strong>.
+        <i class="fas fa-info-circle"></i> 
+        CSV must include: <strong>student_id, module_code, grade, result, credits</strong>.
       </p>
-    
+
       <button type="submit" class="button">Upload</button>
     </form>
-    
-    
-    <h3>📝 Recently Uploaded Grades</h3>
-<table>
-  <thead>
-    <tr>
-      <th>Student ID</th>
-      <th>Module</th>
-      <th>Grade</th>
-      <th>Result</th>
-      <th>Credits</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% recentGrades.forEach(row => { %>
-      <tr>
-        <td><%= row.student_id %></td>
-        <td><%= row.module_code %></td>
-        <td><%= row.grade || "-" %></td>
-        <td><%= row.grade_result %></td>
-        <td><%= row.credits_earned %></td>
-      </tr>
-    <% }) %>
-  </tbody>
-</table>
 
-
+    <!-- Upload result banner -->
     <% if (uploadSuccess) { %>
-        <div class="alert success" id="uploadBanner">
-          ✅ CSV uploaded successfully! 
-          <%= req.query.count || 0 %> records added. 
-          <% if (req.query.errors > 0) { %>
-            ⚠️ <%= req.query.errors %> rows were skipped due to invalid data.
-          <% } %>
-        </div>
-      <% } %>
-      
-      
-      
-  </main>
-</body>
+      <div class="alert success" id="uploadBanner">
+         CSV uploaded successfully! <%= req.query.count || 0 %> records added.
+        <% if (req.query.errors > 0) { %>
+           <%= req.query.errors %> row(s) skipped due to invalid data.
+        <% } %>
+      </div>
+    <% } %>
 
-<script>
+    <!-- Recent Uploads Table -->
+    <h3> Recently Uploaded Grades</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Module</th>
+          <th>Grade</th>
+          <th>Result</th>
+          <th>Credits</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% recentGrades.forEach(row => { %>
+          <tr>
+            <td><%= row.student_id %></td>
+            <td><%= row.module_code %></td>
+            <td><%= row.grade || '-' %></td>
+            <td><%= row.grade_result %></td>
+            <td><%= row.credits_earned %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+
+  </main>
+
+  <footer>
+    <p>University Portal © <%= currentYear %></p>
+  </footer>
+
+  <script>
     setTimeout(() => {
-      const banner = document.getElementById("successBanner");
+      const banner = document.getElementById("uploadBanner");
       if (banner) {
         banner.style.transition = "opacity 0.5s ease";
         banner.style.opacity = "0";
@@ -76,5 +79,5 @@
       }
     }, 4000);
   </script>
-  
+</body>
 </html>

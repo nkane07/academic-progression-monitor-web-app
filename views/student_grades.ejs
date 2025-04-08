@@ -1,35 +1,38 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Academic Record</title>
-   
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-dyZ88mC6Up2uqS4h/K3rMsj62PZfW+nR6vn5bdnU8pHRH5tJzJrKX9F3b6QJY4J6XJo+1E3Lj+WYo4VZ2+5c1g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="/styles.css">
-  </head>
-  
+<head>
+  <title>Academic Record</title>
+  <meta name="viewport" content="width=device-width" />
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
 <body>
   <%- include("partials/banner", { req }) %>
-  <div class="page-header">
-    <h3>Student Grades</h3>
-</div>
-  <main>
-    <h2><i class="fas fa-book"></i> Module Grades</h2>
+
+  <header class="page-header">
+    <h2>Academic Record</h2>
+  </header>
+
+  <main class="container">
+    <h3><i class="fas fa-book-open"></i> Module Grades</h3>
+
     <table>
       <thead>
         <tr>
           <th>Academic Year</th>
-          <th>Module Name</th>
+          <th>Module</th>
           <th>Grade</th>
-          <th>Grade Result</th>
+          <th>Result</th>
         </tr>
       </thead>
       <tbody>
         <% records.forEach(record => { %>
           <tr>
             <td data-label="Academic Year"><%= record.academic_year %></td>
-            <td data-label="Module Name"><%= record.module_name %></td>
+            <td data-label="Module"><%= record.module_name %></td>
             <td data-label="Grade"><%= record.grade %></td>
-            <td data-label="Grade Result"><%= record.grade_result %></td>
+            <td data-label="Result"><%= record.grade_result %></td>
           </tr>
         <% }) %>
       </tbody>

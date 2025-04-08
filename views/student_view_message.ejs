@@ -1,77 +1,68 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>View Message</title>
-  
+  <title>Message View</title>
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
   <%- include("partials/banner", { req }) %>
 
-  <header class="page-container" style="text-align: center;">
-    <h2><i class="fas fa-envelope-open-text"></i> Message Details</h2>
-    <div style="margin-top: 1rem;">
-      <a href="/student/messages" class="button">Back to Inbox</a>
-    </div>
+  <header class="page-container">
+    <h2>Message Details</h2>
+    <a href="/student/messages" class="button" style="margin-top: 1rem;">← Back to Messages</a>
   </header>
-  
 
   <main class="page-container">
-
     <% if (req.query.replied) { %>
       <div id="replySuccessMessage" class="alert success">
-        <i class="fas fa-check-circle"></i> Reply sent successfully!
+        Reply sent successfully.
       </div>
     <% } %>
-  
-    <!-- Message Details -->
-    <div class="summary-card">
-      <h2><i class="fas fa-envelope-open-text"></i> <%= message.subject %></h2>
+
+    <!-- Main -->
+    <section class="summary-card">
+      <h3><%= message.subject %></h3>
       <p><strong>From:</strong> <%= message.sender_name %></p>
       <p><strong>Sent:</strong> <%= new Date(message.sent_at).toLocaleString() %></p>
-      <p><%= message.body %></p>
-    </div>
-  
+      <p style="margin-top: 1rem;"><%= message.body %></p>
+    </section>
+
     <!-- Replies -->
-    <div class="summary-card">
-      <h3><i class="fas fa-comments"></i> Replies</h3>
+    <section class="summary-card">
+      <h4>Conversation Thread</h4>
       <% if (replies.length === 0) { %>
         <p>No replies yet.</p>
       <% } else { %>
-        <ul>
-          <% replies.forEach(reply => { %>
-            <li style="margin-bottom: 1rem;">
-              <strong><%= reply.sender_name %></strong> 
-              <small>(<%= new Date(reply.sent_at).toLocaleString() %>)</small><br>
-              <div><%= reply.body %></div>
-              <hr>
-            </li>
-          <% }) %>
-        </ul>
+        <% replies.forEach(reply => { %>
+          <div class="message-reply">
+            <p><strong><%= reply.sender_name %></strong> 
+              <small style="color: #555;">(<%= new Date(reply.sent_at).toLocaleString() %>)</small></p>
+            <p><%= reply.body %></p>
+            <hr>
+          </div>
+        <% }) %>
       <% } %>
-    </div>
-  
-    <!-- Reply Form -->
-    <div class="summary-card">
-      <h3><i class="fas fa-reply"></i> Reply to this message</h3>
+    </section>
+
+    <!-- Reply  -->
+    <section class="summary-card">
+      <h4>Reply</h4>
       <form method="POST" action="/student/messages/reply" class="form-group">
         <input type="hidden" name="parent_id" value="<%= message.message_id %>">
-        <textarea name="body" rows="4" required></textarea>
+        <textarea name="body" rows="4" required placeholder="Write your reply..."></textarea>
         <br>
-        <button type="submit" class="button"><i class="fas fa-paper-plane"></i> Send Reply</button>
+        <button type="submit" class="button">Send Reply</button>
       </form>
-    </div>
-  
-    <!-- Delete Option -->
-    <div class="summary-card">
-      <form action="/student/messages/<%= message.message_id %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this message?');">
-        <button type="submit" class="button danger"><i class="fas fa-trash"></i> Delete Message</button>
+    </section>
+
+    <!-- Delete -->
+    <section class="summary-card">
+      <form action="/student/messages/<%= message.message_id %>/delete" method="POST" onsubmit="return confirm('Delete this message? This action cannot be undone.')">
+        <button type="submit" class="button danger">Delete Message</button>
       </form>
-    </div>
-  
+    </section>
   </main>
-  
 
   <footer>
     <p>University Portal © <%= currentYear %></p>
@@ -87,6 +78,5 @@
       }
     }, 4000);
   </script>
-  
 </body>
 </html>
