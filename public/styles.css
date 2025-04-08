@@ -855,6 +855,10 @@ canvas#progressionChart {
   margin-bottom: 1.5rem; 
 }
 
+.grade-incomplete {
+  color: #dc3545;
+  font-weight: bold;
+}
 
 /* move screen size */
 @media screen and (max-width: 768px) {

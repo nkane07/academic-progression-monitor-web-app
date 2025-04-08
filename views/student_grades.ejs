@@ -27,16 +27,30 @@
         </tr>
       </thead>
       <tbody>
-        <% records.forEach(record => { %>
-          <tr>
+        <% records.forEach(record => { 
+          const isZeroGrade = parseFloat(record.final_grade) === 0;
+        %>
+          <tr class="<%= isZeroGrade ? 'unread' : '' %>">
             <td data-label="Academic Year"><%= record.academic_year %></td>
             <td data-label="Module"><%= record.module_name %></td>
-            <td data-label="Grade"><%= record.grade %></td>
-            <td data-label="Result"><%= record.grade_result %></td>
+            <td data-label="Grade" class="<%= isZeroGrade ? 'grade-incomplete' : '' %>">
+              <%= record.final_grade %>
+            </td>
+            <td data-label="Result" class="<%= isZeroGrade ? 'grade-incomplete' : '' %>">
+              <%= record.final_result %>
+            </td>
           </tr>
         <% }) %>
+        
+        
       </tbody>
     </table>
+
+    <% if (!records.length) { %>
+      <p class="no-history-message">
+        <i class="fas fa-info-circle"></i> No grade records found.
+      </p>
+    <% } %>
   </main>
 
   <footer>

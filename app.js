@@ -176,20 +176,21 @@ function getStudentAcademicData(userId, callback) {
     const { student_number, pathway } = studentResult[0];
 
     const recordsQuery = `
-      SELECT 
-        e.academic_year,
-        m.module_name,
-        e.module_code,
-        e.grade,
-        e.grade_result,
-        e.resit_grade,
-        e.resit_result,
-        e.credits_earned
-      FROM enrollment e
-      JOIN modules m ON e.module_code = m.module_code
-      WHERE e.student_id = ?
-    `;
-
+    SELECT 
+      e.academic_year,
+      COALESCE(m.module_name, e.module_code) AS module_name,
+      e.module_code,
+      e.grade,
+      e.grade_result,
+      e.resit_grade,
+      e.resit_result,
+      e.credits_earned
+    FROM enrollment e
+    LEFT JOIN modules m ON e.module_code = m.module_code
+    WHERE e.student_id = ?
+    ORDER BY e.academic_year, e.module_code
+  `;
+  
     conn.query(recordsQuery, [student_number], (err, records) => {
       if (err) return callback(err);
 
@@ -209,33 +210,50 @@ function getStudentAcademicData(userId, callback) {
 
       const attemptTracker = {};
 
-      // Calculate totals
-      records.forEach(record => {
-        const grade = parseFloat(record.grade) || 0;
-        const code = record.module_code;
+      // Calculate totals with resit logic
+records.forEach(record => {
+  const code = record.module_code;
 
-        if (["pass", "pass capped"].includes(record.grade_result)) {
-          totalCredits += record.credits_earned;
-          if (level1ModuleCodes.includes(code)) {
-            level1Credits += record.credits_earned;
-          }
-        }
+  const rawResitResult = record.resit_result?.toLowerCase().trim();
+  const rawResitGrade = parseFloat(record.resit_grade);
 
-        if (!["excused", "absent"].includes(record.grade_result)) {
-          totalGrade += grade;
-          gradedModules++;
-        }
+  const finalResult = rawResitResult && rawResitResult !== 'none'
+    ? rawResitResult
+    : record.grade_result?.toLowerCase().trim();
 
-        if (["fail", "absent"].includes(record.grade_result)) {
-          attemptTracker[code] = (attemptTracker[code] || 0) + 1;
-          failedModules.push(record.module_name);
-          resitModules.push(record.module_name);
-        }
+  const finalGrade = !isNaN(rawResitGrade) && rawResitResult && rawResitResult !== 'none'
+    ? rawResitGrade
+    : parseFloat(record.grade) || 0;
 
-        if (record.grade_result === "excused") {
-          resitModules.push(record.module_name);
-        }
-      });
+  // Credit accumulation
+  if (["pass", "pass capped"].includes(finalResult)) {
+    totalCredits += record.credits_earned;
+    if (level1ModuleCodes.includes(code)) {
+      level1Credits += record.credits_earned;
+    }
+  }
+
+  // Grade calculation for average
+  if (!["excused", "absent"].includes(finalResult)) {
+    totalGrade += finalGrade;
+    gradedModules++;
+  }
+
+  // Track fails and resits
+  if (["fail", "absent"].includes(finalResult)) {
+    attemptTracker[code] = (attemptTracker[code] || 0) + 1;
+    failedModules.push(record.module_name);
+    resitModules.push(record.module_name);
+  }
+
+  if (finalResult === "excused") {
+    resitModules.push(record.module_name);
+  }
+
+  // Overwrite record result + grade for UI display if needed
+  record.final_grade = finalGrade;
+  record.final_result = finalResult;
+});
 
       // academic level
       let requiredCredits = 120;
