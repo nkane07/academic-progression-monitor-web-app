@@ -22,8 +22,7 @@ This web app was designed as part of my CSC7062 Web Development module, demonstr
 1. Clone repository - git clone https://gitlab.eeecs.qub.ac.uk/40176951/40176951.git
 cd 40176951
 2. Install dependencies - npm install
-3. Import the database - Import academic_progression.sql into your local MySQL server
-- Update /conn.js with your local DB credentials
+3. Import the database - Import academic_progression.sql into your local MySQL server. Update const conn in app.js with your local DB credentials
 4. Start the server - npm run dev
 5. Open in browser - http://localhost:3000
 
