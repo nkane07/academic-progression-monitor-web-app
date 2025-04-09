@@ -1,77 +1,60 @@
 # 40176951
 
-## Add your files
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.eeecs.qub.ac.uk/40176951/40176951.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab.eeecs.qub.ac.uk/40176951/40176951/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
+## Student ID
+40176951
 
 ## Name
 Academic Progression Monitoring Web App for Web Development Project
 
 ## Description
-A web app as part of a coursework assignment to demonstrate my use of full stack web development. The app helps students and staff at university to log into their account using their own university login details. The app provides two interfaces, one for students and one for staff. Students can see their profile, grades, progression status e.g. if theyre moving from year 1 to year 2 or need to resit an exam first. Students can also send messages and receive notifications from staff. The staff can manage students records, modules and grades. The app will calculate students progression based on criteria like a minimum pass mark and module performance.
+This web app was designed as part of my CSC7062 Web Development module, demonstrating my full stack web development skills using Node.js, Express, MySQL, and EJS templating. The app is designed to assit both students and staff manage academc progression, based on progression rules and CSV-based grade data
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+## The application includes;
+- Secure login system for admin or students
+- Student dashboard showing: Personal profile, Academic records (including full pass/fail/resit history), Progression decisions (automatically calculated),Messaging system for contacting staff
+- Admin dashboard with: Student management (view/edit records), Grade management (upload via CSV, edit individual records), Manual progression decision overrides, Reports and module-level statistics
+- Resit handling accounting for resit result when present
+- Visual styling for grade outcomes (pass, fail, pass capped, except, absent)
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+## Setup Instructions 
+1. Clone repository - git clone https://gitlab.eeecs.qub.ac.uk/40176951/40176951.git
+cd 40176951
+2. Install dependencies - npm install
+3. Import the database - Import academic_progression.sql into your local MySQL server
+- Update /conn.js with your local DB credentials
+4. Start the server - npm run dev
+5. Open in browser - http://localhost:3000
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+## Test Login Credentials
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+### Student Login
+- Use any Student ID from the database, e.g. 21-IFSY-0000001
+- Password: student123
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+### Admin Login
+- Use Admin ID: admin1 or admin2
+- Password: admin123
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+> These test accounts and bcypt passwords are pre-populated in the database for demonstration purposes.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+## Data Source
+All module, grade and enrollment data was populated from different clean versions of student_module_grade_data.csv, which included - resit attempts, grades, outcomes, module names, pathways and entry levels
+
+## Screenshots
+
+## Known Issues
+Admin notes only show most recent override note, full edit history is not maintained
+
 
 ## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+Developed by 40176951
+Part of the Web Development CSC7062 module at Queens University Belfast
+Special thanks to lecturer John Busch for course delivery and project support
 
 ## License
-For open source projects, say how it is licensed.
+This coursework is intended for academic use and is not licensed for commercial distribution.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+
