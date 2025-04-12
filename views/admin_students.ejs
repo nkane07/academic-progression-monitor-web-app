@@ -27,30 +27,22 @@
       </div>
     <% } %>
 
-    <!-- Search -->
-    <form method="GET" action="/admin/students" class="search-form">
-      <div class="input-wrapper">
-        <input 
-          type="text" 
-          name="search" 
-          placeholder="Search by student name..." 
-          value="<%= search || '' %>" 
-          oninput="document.getElementById('resetSearch').style.display = this.value ? 'block' : 'none';"
-        />
-        <button 
-          type="button" 
-          id="resetSearch" 
-          onclick="window.location.href='/admin/students'" 
-          class="reset-icon"
-          style="<%= search ? 'display:block' : 'display:none' %>"
-        >✖</button>
-      </div>
-      <button type="submit" class="button">Search</button>
+  
+    <form method="GET" action="/admin/students" class="search-form search-flex">
+      <input 
+        type="text" 
+        name="search" 
+        class="search-input-wide"
+        placeholder="Search students by name, number or pathway..." 
+        value="<%= search || '' %>" 
+      />
+      <button type="submit" class="button search-btn">Search</button>
     </form>
-
+    
     <!-- Student table -->
     <h3>All Students</h3>
-    <table>
+    <p class="info-text">Students are sorted by academic year ascending</p>
+    <table> 
       <thead>
         <tr>
           <th>Name</th>

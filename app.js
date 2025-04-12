@@ -1,4 +1,3 @@
-
 // Setup
 const express = require("express");
 const app = express();
@@ -49,12 +48,14 @@ app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
 // Sessions
-app.use(session({
-  secret: "mysecretsessionkey",
-  resave: false,
-  saveUninitialized: true,
-  cookie: { maxAge: 600000 }, // 10 minutes
-}));
+app.use(
+  session({
+    secret: "mysecretsessionkey",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { maxAge: 600000 }, // 10 minutes
+  })
+);
 
 // Global variables
 app.use((req, res, next) => {
@@ -63,7 +64,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Message badge for student 
+// Message badge for student
 app.use((req, res, next) => {
   if (req.session && req.session.userRole === "student") {
     const unreadQuery = `
@@ -93,13 +94,12 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-
 // Login page
 app.get("/", (req, res) => {
   res.render("login", { error: null });
 });
 
-// Login form 
+// Login form
 app.post("/login", (req, res) => {
   const { userField: username, password } = req.body;
 
@@ -107,7 +107,9 @@ app.post("/login", (req, res) => {
   conn.query(userQuery, [username], (err, results) => {
     if (err) throw err;
     if (results.length === 0) {
-      return res.render("login", { error: "User not found. Please try again." });
+      return res.render("login", {
+        error: "User not found. Please try again.",
+      });
     }
 
     const user = results[0];
@@ -116,7 +118,9 @@ app.post("/login", (req, res) => {
       if (err) throw err;
 
       if (!isMatch) {
-        return res.render("login", { error: "Incorrect password. Please try again." });
+        return res.render("login", {
+          error: "Incorrect password. Please try again.",
+        });
       }
 
       req.session.userId = user.user_id;
@@ -127,27 +131,24 @@ app.post("/login", (req, res) => {
 
       // check role
       if (user.role === "student") {
-        const nameQuery = "SELECT first_name, last_name FROM students WHERE user_id = ?";
+        const nameQuery =
+          "SELECT first_name, last_name FROM students WHERE user_id = ?";
         conn.query(nameQuery, [user.user_id], (err, studentResult) => {
           if (err) throw err;
 
-          req.session.studentName = studentResult.length > 0
-            ? `${studentResult[0].first_name} ${studentResult[0].last_name}`
-            : "Student";
+          req.session.studentName =
+            studentResult.length > 0
+              ? `${studentResult[0].first_name} ${studentResult[0].last_name}`
+              : "Student";
 
           res.redirect("/student");
         });
-
       } else if (user.role === "admin") {
         res.redirect("/admin");
       }
     });
   });
 });
-
-// ========================================================
-// DASHBOARD ROUTES
-// ========================================================
 
 // Student Dashboard
 app.get("/student", requireStudent, (req, res) => {
@@ -160,7 +161,7 @@ app.get("/admin", requireAdmin, (req, res) => {
   res.render("admin_dashboard");
 });
 
-// Academic Data for a Student
+// Academic data for a student
 
 function getStudentAcademicData(userId, callback) {
   const studentQuery = `
@@ -190,7 +191,7 @@ function getStudentAcademicData(userId, callback) {
     WHERE e.student_id = ?
     ORDER BY e.academic_year, e.module_code
   `;
-  
+
     conn.query(recordsQuery, [student_number], (err, records) => {
       if (err) return callback(err);
 
@@ -203,57 +204,72 @@ function getStudentAcademicData(userId, callback) {
       let level1Credits = 0;
 
       const level1ModuleCodes = [
-        "IFSY-123", "IFSY-125", "IFSY-126", "IFSY-127", "IFSY-128",
-        "IFSY-129", "IFSY-130", "IFSY-131", "IFSY-132", "IFSY-133",
-        "BSAS-102", "BSAS-109", "BSAS-112", "BSAS-113", "IFSY-124", "FINA-107"
+        "IFSY-123",
+        "IFSY-125",
+        "IFSY-126",
+        "IFSY-127",
+        "IFSY-128",
+        "IFSY-129",
+        "IFSY-130",
+        "IFSY-131",
+        "IFSY-132",
+        "IFSY-133",
+        "BSAS-102",
+        "BSAS-109",
+        "BSAS-112",
+        "BSAS-113",
+        "IFSY-124",
+        "FINA-107",
       ];
 
       const attemptTracker = {};
 
       // Calculate totals with resit logic
-records.forEach(record => {
-  const code = record.module_code;
+      records.forEach((record) => {
+        const code = record.module_code;
 
-  const rawResitResult = record.resit_result?.toLowerCase().trim();
-  const rawResitGrade = parseFloat(record.resit_grade);
+        const rawResitResult = record.resit_result?.toLowerCase().trim();
+        const rawResitGrade = parseFloat(record.resit_grade);
 
-  const finalResult = rawResitResult && rawResitResult !== 'none'
-    ? rawResitResult
-    : record.grade_result?.toLowerCase().trim();
+        const finalResult =
+          rawResitResult && rawResitResult !== "none"
+            ? rawResitResult
+            : record.grade_result?.toLowerCase().trim();
 
-  const finalGrade = !isNaN(rawResitGrade) && rawResitResult && rawResitResult !== 'none'
-    ? rawResitGrade
-    : parseFloat(record.grade) || 0;
+        const finalGrade =
+          !isNaN(rawResitGrade) && rawResitResult && rawResitResult !== "none"
+            ? rawResitGrade
+            : parseFloat(record.grade) || 0;
 
-  // Credit accumulation
-  if (["pass", "pass capped"].includes(finalResult)) {
-    totalCredits += record.credits_earned;
-    if (level1ModuleCodes.includes(code)) {
-      level1Credits += record.credits_earned;
-    }
-  }
+        // Credit accumulation
+        if (["pass", "pass capped"].includes(finalResult)) {
+          totalCredits += record.credits_earned;
+          if (level1ModuleCodes.includes(code)) {
+            level1Credits += record.credits_earned;
+          }
+        }
 
-  // Grade calculation for average
-  if (!["excused", "absent"].includes(finalResult)) {
-    totalGrade += finalGrade;
-    gradedModules++;
-  }
+        // Grade calculation for average
+        if (!["excused", "absent"].includes(finalResult)) {
+          totalGrade += finalGrade;
+          gradedModules++;
+        }
 
-  // Track fails and resits
-  if (["fail", "absent"].includes(finalResult)) {
-    attemptTracker[code] = (attemptTracker[code] || 0) + 1;
-    failedModules.push(record.module_name);
-    resitModules.push(record.module_name);
-  }
+        // Track fails and resits
+        if (["fail", "absent"].includes(finalResult)) {
+          attemptTracker[code] = (attemptTracker[code] || 0) + 1;
+          failedModules.push(record.module_name);
+          resitModules.push(record.module_name);
+        }
 
-  if (finalResult === "excused") {
-    resitModules.push(record.module_name);
-  }
+        if (finalResult === "excused") {
+          resitModules.push(record.module_name);
+        }
 
-  // Overwrite record result + grade for UI display if needed
-  record.final_grade = finalGrade;
-  record.final_result = finalResult;
-});
+        // Overwrite record result and grade for UI display if needed
+        record.final_grade = finalGrade;
+        record.final_result = finalResult;
+      });
 
       // academic level
       let requiredCredits = 120;
@@ -272,32 +288,45 @@ records.forEach(record => {
 
       // core modules based on pathway
       const coreModules =
-        (pathway === "Information Systems" && currentLevel === "L2") ? ["IFSY-259", "IFSY-240"] :
-        (pathway === "Business Data Analytics" && currentLevel === "L2") ? ["IFSY-257"] : [];
+        pathway === "Information Systems" && currentLevel === "L2"
+          ? ["IFSY-259", "IFSY-240"]
+          : pathway === "Business Data Analytics" && currentLevel === "L2"
+          ? ["IFSY-257"]
+          : [];
 
-      records.forEach(record => {
-        if (coreModules.includes(record.module_code) && ["fail", "absent"].includes(record.grade_result)) {
+      records.forEach((record) => {
+        if (
+          coreModules.includes(record.module_code) &&
+          ["fail", "absent"].includes(record.grade_result)
+        ) {
           coreFails++;
         }
       });
 
-      const averageGrade = gradedModules ? (totalGrade / gradedModules).toFixed(2) : 0;
+      const averageGrade = gradedModules
+        ? (totalGrade / gradedModules).toFixed(2)
+        : 0;
 
       // Progression decision
-      let decision = (currentLevelLabel === "Year 3")
-        ? "Progress to Final Year"
-        : `Progress to Year ${parseInt(currentLevelLabel.split(" ")[1]) + 1}`;
+      let decision =
+        currentLevelLabel === "Year 3"
+          ? "Progress to Final Year"
+          : `Progress to Year ${parseInt(currentLevelLabel.split(" ")[1]) + 1}`;
 
       if (totalCredits < 100 || averageGrade < 40)
         decision = "Resit Required or Contact Advisor";
 
-      if (coreFails > 0)
-        decision = "Failed Core Module - Contact Advisor";
+      if (coreFails > 0) decision = "Failed Core Module - Contact Advisor";
 
-      if ((currentLevel === "L2" || currentLevel === "L3") && level1Credits < 120)
+      if (
+        (currentLevel === "L2" || currentLevel === "L3") &&
+        level1Credits < 120
+      )
         decision = "Incomplete Year 1 Modules - Cannot Progress";
 
-      const exceededAttempts = Object.values(attemptTracker).filter(count => count >= 4).length;
+      const exceededAttempts = Object.values(attemptTracker).filter(
+        (count) => count >= 4
+      ).length;
       if (exceededAttempts > 0)
         decision = "Exceeded Max Attempts - Contact Advisor";
 
@@ -310,7 +339,7 @@ records.forEach(record => {
         failedModules,
         resitModules,
         decision,
-        currentLevel
+        currentLevel,
       });
     });
   });
@@ -359,10 +388,14 @@ app.get("/student/progression", requireStudent, (req, res) => {
           (student_id, academic_year, decision_text, decision_date, notes)
           VALUES (?, ?, ?, NOW(), ?)
         `;
-        conn.query(insertQuery, [userId, academicYear, data.decision, null], (err) => {
-          if (err) throw err;
-          console.log("Progression decision saved.");
-        });
+        conn.query(
+          insertQuery,
+          [userId, academicYear, data.decision, null],
+          (err) => {
+            if (err) throw err;
+            console.log("Progression decision saved.");
+          }
+        );
       }
 
       // Fetch the most recent decision - system or admin manual override
@@ -374,30 +407,34 @@ app.get("/student/progression", requireStudent, (req, res) => {
         LIMIT 1
       `;
 
-      conn.query(fetchDecisionQuery, [userId, academicYear], (err, decisionResults) => {
-        if (err) throw err;
+      conn.query(
+        fetchDecisionQuery,
+        [userId, academicYear],
+        (err, decisionResults) => {
+          if (err) throw err;
 
-        const finalDecision = decisionResults.length > 0 
-          ? decisionResults[0].decision_text 
-          : data.decision;
+          const finalDecision =
+            decisionResults.length > 0
+              ? decisionResults[0].decision_text
+              : data.decision;
 
-        const adminNote = decisionResults.length > 0 
-          ? decisionResults[0].notes 
-          : null;
+          const adminNote =
+            decisionResults.length > 0 ? decisionResults[0].notes : null;
 
-        res.render("student_progression", {
-          totalCredits: data.totalCredits,
-          requiredCredits: data.requiredCredits,
-          averageGrade: data.averageGrade,
-          failedModules: data.failedModules,
-          resitModules: data.resitModules,
-          decision: finalDecision,
-          adminNote,
-          currentLevel: data.currentLevel,
-          academicYear,
-          currentYear: new Date().getFullYear()
-        });
-      });
+          res.render("student_progression", {
+            totalCredits: data.totalCredits,
+            requiredCredits: data.requiredCredits,
+            averageGrade: data.averageGrade,
+            failedModules: data.failedModules,
+            resitModules: data.resitModules,
+            decision: finalDecision,
+            adminNote,
+            currentLevel: data.currentLevel,
+            academicYear,
+            currentYear: new Date().getFullYear(),
+          });
+        }
+      );
     });
   });
 });
@@ -443,12 +480,11 @@ app.get("/student/profile", requireStudent, (req, res) => {
       res.render("student_profile", {
         student: { ...student, current_level: currentLevel },
         currentYearDisplay,
-        cleared: req.query.cleared
+        cleared: req.query.cleared,
       });
     });
   });
 });
-
 
 // student messages
 
@@ -489,7 +525,7 @@ app.get("/student/messages", requireStudent, (req, res) => {
       messages: results,
       box,
       search,
-      req
+      req,
     });
   });
 });
@@ -519,7 +555,9 @@ app.get("/student/messages/:id", requireStudent, (req, res) => {
 
     // Mark as read
     if (message.recipient_id === userId) {
-      conn.query(`UPDATE messages SET is_read = 1 WHERE message_id = ?`, [messageId]);
+      conn.query(`UPDATE messages SET is_read = 1 WHERE message_id = ?`, [
+        messageId,
+      ]);
     }
 
     const repliesQuery = `
@@ -536,7 +574,7 @@ app.get("/student/messages/:id", requireStudent, (req, res) => {
       res.render("student_view_message", {
         message,
         replies,
-        req
+        req,
       });
     });
   });
@@ -567,7 +605,7 @@ app.post("/student/messages/reply", requireStudent, (req, res) => {
   });
 });
 
-// Delete Message
+// Delete a message
 app.post("/student/messages/:id/delete", requireStudent, (req, res) => {
   const messageId = req.params.id;
   const userId = req.session.userId;
@@ -583,7 +621,7 @@ app.post("/student/messages/:id/delete", requireStudent, (req, res) => {
   });
 });
 
-// Send Message to admin
+// Send a message to admin
 app.post("/student/messages/contact", requireStudent, (req, res) => {
   const userId = req.session.userId;
   const { subject, body } = req.body;
@@ -610,42 +648,45 @@ app.post("/student/messages/contact", requireStudent, (req, res) => {
   });
 });
 
-
 //student profile - update
 
-app.post("/student/profile/update", requireStudent, upload.single("profile_image"), (req, res) => {
-  const userId = req.session.userId;
-  const { secondary_email } = req.body;
-  const profileImage = req.file ? `/uploads/${req.file.filename}` : null;
+app.post(
+  "/student/profile/update",
+  requireStudent,
+  upload.single("profile_image"),
+  (req, res) => {
+    const userId = req.session.userId;
+    const { secondary_email } = req.body;
+    const profileImage = req.file ? `/uploads/${req.file.filename}` : null;
 
-  const selectQuery = `
+    const selectQuery = `
     SELECT profile_image, secondary_email 
     FROM students 
     WHERE user_id = ?
   `;
 
-  conn.query(selectQuery, [userId], (err, results) => {
-    if (err) throw err;
+    conn.query(selectQuery, [userId], (err, results) => {
+      if (err) throw err;
 
-    const current = results[0];
-    const finalImage = profileImage || current.profile_image;
-    const finalEmail = secondary_email || current.secondary_email;
+      const current = results[0];
+      const finalImage = profileImage || current.profile_image;
+      const finalEmail = secondary_email || current.secondary_email;
 
-    const updateQuery = `
+      const updateQuery = `
       UPDATE students 
       SET profile_image = ?, secondary_email = ? 
       WHERE user_id = ?
     `;
 
-    conn.query(updateQuery, [finalImage, finalEmail, userId], (err) => {
-      if (err) throw err;
-      res.redirect("/student/profile");
+      conn.query(updateQuery, [finalImage, finalEmail, userId], (err) => {
+        if (err) throw err;
+        res.redirect("/student/profile");
+      });
     });
-  });
-});
+  }
+);
 
-
-// admn messages - send
+// admin messages - send
 
 // send message form
 app.get("/admin/messages/new", requireAdmin, (req, res) => {
@@ -676,7 +717,6 @@ app.post("/admin/messages/send", requireAdmin, (req, res) => {
       if (err) throw err;
       res.redirect("/admin/messages/new?sent=1");
     });
-
   } else if (filter_type === "group") {
     const level = parseInt(year);
 
@@ -703,13 +743,13 @@ app.post("/admin/messages/send", requireAdmin, (req, res) => {
       if (err) throw err;
       if (students.length === 0) return res.send("No matching students found.");
 
-      const values = students.map(s => [
+      const values = students.map((s) => [
         senderId,
         s.user_id,
         subject,
         body,
         new Date(),
-        0
+        0,
       ]);
 
       const insertQuery = `
@@ -725,12 +765,10 @@ app.post("/admin/messages/send", requireAdmin, (req, res) => {
   }
 });
 
-
 // admin - see students
 
 app.get("/admin/students", requireAdmin, (req, res) => {
   const search = req.query.search || "";
-  const likeSearch = `%${search}%`;
   const page = parseInt(req.query.page) || 1;
   const limit = 10;
   const offset = (page - 1) * limit;
@@ -745,45 +783,60 @@ app.get("/admin/students", requireAdmin, (req, res) => {
       SUM(e.credits_earned) AS total_credits
     FROM students s
     LEFT JOIN enrollment e ON s.student_number = e.student_id
-    WHERE LOWER(s.first_name) LIKE LOWER(?) OR LOWER(s.last_name) LIKE LOWER(?)
+    WHERE CONCAT(s.first_name, ' ', s.last_name) LIKE ? 
+       OR s.student_number LIKE ?
+       OR s.pathway LIKE ?
     GROUP BY s.student_number
+    ORDER BY total_credits ASC
     LIMIT ? OFFSET ?
+
   `;
 
-  conn.query(query, [likeSearch, likeSearch, limit, offset], (err, results) => {
-    if (err) throw err;
+  const wildcard = `%${search}%`;
 
-    const students = results.map((s) => {
-      let level = "Year 1";
-      if (s.total_credits >= 240) level = "Year 3";
-      else if (s.total_credits >= 120) level = "Year 2";
-      return { ...s, level };
-    });
+  conn.query(
+    query,
+    [wildcard, wildcard, wildcard, limit, offset],
+    (err, results) => {
+      if (err) throw err;
 
-    const countQuery = `
+      const students = results.map((s) => {
+        let levelDisplay = "Year 1";
+        if (s.total_credits >= 240) levelDisplay = "Year 3";
+        else if (s.total_credits >= 120) levelDisplay = "Year 2";
+        return { ...s, level: levelDisplay };
+      });
+
+      const countQuery = `
       SELECT COUNT(DISTINCT s.student_number) AS count
       FROM students s
       LEFT JOIN enrollment e ON s.student_number = e.student_id
-      WHERE LOWER(s.first_name) LIKE LOWER(?) OR LOWER(s.last_name) LIKE LOWER(?)
+      WHERE CONCAT(s.first_name, ' ', s.last_name) LIKE ? 
+         OR s.student_number LIKE ?
+         OR s.pathway LIKE ?
     `;
 
-    conn.query(countQuery, [likeSearch, likeSearch], (err, countResult) => {
-      if (err) throw err;
+      conn.query(
+        countQuery,
+        [wildcard, wildcard, wildcard],
+        (err, countResult) => {
+          if (err) throw err;
 
-      const totalStudents = countResult[0].count;
-      const totalPages = Math.ceil(totalStudents / limit);
+          const totalStudents = countResult[0].count;
+          const totalPages = Math.ceil(totalStudents / limit);
 
-      res.render("admin_students", {
-        students,
-        req,
-        currentPage: page,
-        totalPages,
-        search,
-      });
-    });
-  });
+          res.render("admin_students", {
+            students,
+            req,
+            currentPage: page,
+            totalPages,
+            search,
+          });
+        }
+      );
+    }
+  );
 });
-
 
 // admin - add new student
 
@@ -841,7 +894,6 @@ app.post("/admin/students/new", requireAdmin, (req, res) => {
   });
 });
 
-
 // admin manage student
 
 app.get("/admin/students/:id", requireAdmin, (req, res) => {
@@ -865,7 +917,8 @@ app.get("/admin/students/:id", requireAdmin, (req, res) => {
 
 app.post("/admin/students/:id/update", requireAdmin, (req, res) => {
   const userId = req.params.id;
-  const { first_name, last_name, student_number, pathway, current_year } = req.body;
+  const { first_name, last_name, student_number, pathway, current_year } =
+    req.body;
 
   const query = `
     UPDATE students 
@@ -897,7 +950,7 @@ app.post("/admin/students/:id/delete", requireAdmin, (req, res) => {
   });
 });
 
-
+//admin grades
 app.get("/admin/grades", requireAdmin, (req, res) => {
   const search = req.query.search || "";
   const likeSearch = `%${search}%`;
@@ -993,62 +1046,70 @@ app.get("/admin/upload-csv", requireAdmin, (req, res) => {
       uploadSuccess: req.query.success,
       currentYear: new Date().getFullYear(),
       recentGrades,
-      req
+      req,
     });
   });
 });
 
-
 // admin csv grade upload
 
-app.post("/admin/upload-grades", requireAdmin, uploadCSV.single("csvFile"), (req, res) => {
-  if (!req.file) return res.send("No file uploaded.");
+app.post(
+  "/admin/upload-grades",
+  requireAdmin,
+  uploadCSV.single("csvFile"),
+  (req, res) => {
+    if (!req.file) return res.send("No file uploaded.");
 
-  const results = [];
-  let successfulInserts = 0;
-  const failedRows = [];
+    const results = [];
+    let successfulInserts = 0;
+    const failedRows = [];
 
-  fs.createReadStream(req.file.path)
-    .pipe(csv())
-    .on("data", (row) => {
-      if (
-        !row.student_id ||
-        !row.module_code ||
-        !row.grade_result ||
-        isNaN(row.credits_earned)
-      ) {
-        failedRows.push(row);
-      } else {
-        results.push(row);
-      }
-    })
-    .on("end", () => {
-      const insertQuery = `
+    fs.createReadStream(req.file.path)
+      .pipe(csv())
+      .on("data", (row) => {
+        if (
+          !row.student_id ||
+          !row.module_code ||
+          !row.grade_result ||
+          isNaN(row.credits_earned)
+        ) {
+          failedRows.push(row);
+        } else {
+          results.push(row);
+        }
+      })
+      .on("end", () => {
+        const insertQuery = `
         INSERT INTO enrollment (student_id, module_code, grade, grade_result, credits_earned)
         VALUES (?, ?, ?, ?, ?)
       `;
 
-      results.forEach((r) => {
-        conn.query(
-          insertQuery,
-          [r.student_id, r.module_code, r.grade, r.grade_result, r.credits_earned],
-          (err) => {
-            if (!err) successfulInserts++;
-          }
-        );
+        results.forEach((r) => {
+          conn.query(
+            insertQuery,
+            [
+              r.student_id,
+              r.module_code,
+              r.grade,
+              r.grade_result,
+              r.credits_earned,
+            ],
+            (err) => {
+              if (!err) successfulInserts++;
+            }
+          );
+        });
+
+        fs.unlink(req.file.path, () => {
+          res.redirect(
+            `/admin/upload-csv?success=1&count=${successfulInserts}&errors=${failedRows.length}`
+          );
+        });
       });
+  }
+);
 
-      fs.unlink(req.file.path, () => {
-        res.redirect(`/admin/upload-csv?success=1&count=${successfulInserts}&errors=${failedRows.length}`);
-      });
-    });
-});
-
-
-// ========================================================
-// ADMIN - VIEW MODULES
-// ========================================================
-
+//admin modules
 app.get("/admin/modules", requireAdmin, (req, res) => {
   const search = req.query.search || "";
   const likeSearch = `%${search}%`;
@@ -1089,7 +1150,6 @@ app.get("/admin/modules", requireAdmin, (req, res) => {
     });
   });
 });
-
 
 //admin - add module
 
@@ -1152,7 +1212,7 @@ app.get("/admin/modules/:id/edit", requireAdmin, (req, res) => {
 
     res.render("admin_edit_module", {
       module: result[0],
-      currentYear: new Date().getFullYear()
+      currentYear: new Date().getFullYear(),
     });
   });
 });
@@ -1166,7 +1226,7 @@ app.post("/admin/modules/:id/update", requireAdmin, (req, res) => {
     module_code,
     credit_value,
     degree_programme_code,
-    semester
+    semester,
   } = req.body;
 
   const updateQuery = `
@@ -1176,17 +1236,21 @@ app.post("/admin/modules/:id/update", requireAdmin, (req, res) => {
     WHERE module_id = ?
   `;
 
-  conn.query(updateQuery, [
-    module_name,
-    module_code,
-    credit_value,
-    degree_programme_code,
-    semester,
-    id
-  ], (err) => {
-    if (err) throw err;
-    res.redirect("/admin/modules?updated=1");
-  });
+  conn.query(
+    updateQuery,
+    [
+      module_name,
+      module_code,
+      credit_value,
+      degree_programme_code,
+      semester,
+      id,
+    ],
+    (err) => {
+      if (err) throw err;
+      res.redirect("/admin/modules?updated=1");
+    }
+  );
 });
 
 // admin delete modules
@@ -1231,7 +1295,11 @@ app.get("/admin/reports", requireAdmin, (req, res) => {
       AVG(CASE WHEN e.grade_result NOT IN ('excused', 'absent') THEN e.grade ELSE NULL END) AS avg_grade
     FROM students s
     JOIN enrollment e ON s.student_number = e.student_id
-    ${selectedPathway !== "all" ? "WHERE s.pathway = " + conn.escape(selectedPathway) : ""}
+    ${
+      selectedPathway !== "all"
+        ? "WHERE s.pathway = " + conn.escape(selectedPathway)
+        : ""
+    }
     GROUP BY s.student_number
     ${levelCondition}
   `;
@@ -1262,12 +1330,14 @@ app.get("/admin/reports", requireAdmin, (req, res) => {
         stats,
         req,
         selectedLevel,
-        selectedPathway
+        selectedPathway,
       });
     }
 
     // student id list
-    const studentIds = studentData.map((s) => `'${s.student_number}'`).join(",");
+    const studentIds = studentData
+      .map((s) => `'${s.student_number}'`)
+      .join(",");
 
     // pathway stats
     const pathwayStatsQuery = `
@@ -1327,7 +1397,7 @@ app.get("/admin/reports", requireAdmin, (req, res) => {
             stats,
             req,
             selectedLevel,
-            selectedPathway
+            selectedPathway,
           });
         });
       });
@@ -1396,7 +1466,8 @@ app.get("/admin/students/:id/summary", requireAdmin, (req, res) => {
         }
 
         if (["fail", "absent"].includes(record.grade_result)) {
-          attemptTracker[record.module_code] = (attemptTracker[record.module_code] || 0) + 1;
+          attemptTracker[record.module_code] =
+            (attemptTracker[record.module_code] || 0) + 1;
           failedModules.push(record.module_name);
           resitModules.push(record.module_name);
         }
@@ -1415,7 +1486,7 @@ app.get("/admin/students/:id/summary", requireAdmin, (req, res) => {
       }
 
       //failed core modules
-      const coreModules = 
+      const coreModules =
         student.pathway === "Information Systems"
           ? ["IFSY-259", "IFSY-240"]
           : student.pathway === "Business Data Analytics"
@@ -1423,7 +1494,10 @@ app.get("/admin/students/:id/summary", requireAdmin, (req, res) => {
           : [];
 
       records.forEach((record) => {
-        if (coreModules.includes(record.module_code) && ["fail", "absent"].includes(record.grade_result)) {
+        if (
+          coreModules.includes(record.module_code) &&
+          ["fail", "absent"].includes(record.grade_result)
+        ) {
           coreFails.push(record.module_name);
         }
       });
@@ -1433,7 +1507,9 @@ app.get("/admin/students/:id/summary", requireAdmin, (req, res) => {
         .filter(([_, count]) => count >= 4)
         .map(([code]) => code);
 
-      const averageGrade = gradedModules ? (totalGrade / gradedModules).toFixed(2) : 0;
+      const averageGrade = gradedModules
+        ? (totalGrade / gradedModules).toFixed(2)
+        : 0;
 
       // work out progression decision
       let decision = "Progression decision pending";
@@ -1473,7 +1549,7 @@ app.get("/admin/students/:id/summary", requireAdmin, (req, res) => {
           manualDecision,
           req,
           requiredCredits,
-          progressionHistory
+          progressionHistory,
         });
       });
     });
@@ -1489,7 +1565,7 @@ app.post("/admin/students/:id/override-decision", requireAdmin, (req, res) => {
   const overrideNote = "Manual override by admin";
 
   //override into progression_decisions
-  
+
   const upsertQuery = `
     INSERT INTO progression_decisions 
       (student_id, academic_year, decision_text, decision_date, notes)
@@ -1500,22 +1576,26 @@ app.post("/admin/students/:id/override-decision", requireAdmin, (req, res) => {
       notes = VALUES(notes)
   `;
 
-  conn.query(upsertQuery, [userId, academicYear, manual_decision, overrideNote], (err) => {
-    if (err) throw err;
+  conn.query(
+    upsertQuery,
+    [userId, academicYear, manual_decision, overrideNote],
+    (err) => {
+      if (err) throw err;
 
-    // Update manual decision on student profile
-    
-    const updateStudentQuery = `
+      // Update manual decision on student profile
+
+      const updateStudentQuery = `
       UPDATE students 
       SET manual_decision = ? 
       WHERE user_id = ?
     `;
 
-    conn.query(updateStudentQuery, [manual_decision, userId], (err) => {
-      if (err) throw err;
-      res.redirect(`/admin/students/${userId}/summary`);
-    });
-  });
+      conn.query(updateStudentQuery, [manual_decision, userId], (err) => {
+        if (err) throw err;
+        res.redirect(`/admin/students/${userId}/summary`);
+      });
+    }
+  );
 });
 // login - forgot username
 
@@ -1542,7 +1622,7 @@ app.post("/forgot-username", (req, res) => {
     if (result.length === 0) {
       return res.render("forgot_username", {
         username: null,
-        error: "Email not found."
+        error: "Email not found.",
       });
     }
 
@@ -1550,7 +1630,7 @@ app.post("/forgot-username", (req, res) => {
 
     res.render("forgot_username", {
       username,
-      error: null
+      error: null,
     });
   });
 });
@@ -1561,7 +1641,7 @@ app.post("/forgot-username", (req, res) => {
 app.get("/forgot-password", (req, res) => {
   res.render("forgot_password", {
     success: null,
-    error: null
+    error: null,
   });
 });
 
@@ -1582,7 +1662,7 @@ app.post("/forgot-password", async (req, res) => {
     if (results.length === 0) {
       return res.render("forgot_password", {
         error: "Email not found.",
-        success: null
+        success: null,
       });
     }
 
@@ -1600,8 +1680,9 @@ app.post("/forgot-password", async (req, res) => {
       if (err) throw err;
 
       res.render("forgot_password", {
-        success: "A temporary password has been generated. Please check your email or contact support.",
-        error: null
+        success:
+          "A temporary password has been generated. Please check your email or contact support.",
+        error: null,
       });
 
       console.log(`TEMP password for ${user.username}: ${tempPassword}`);
@@ -1616,7 +1697,7 @@ app.get("/reset-password", (req, res) => {
   if (!req.session.userId) return res.redirect("/");
   res.render("reset_password", {
     error: null,
-    success: null
+    success: null,
   });
 });
 
@@ -1630,7 +1711,7 @@ app.post("/reset-password", async (req, res) => {
   if (new_password !== confirm_password) {
     return res.render("reset_password", {
       error: "Passwords do not match.",
-      success: null
+      success: null,
     });
   }
 
@@ -1648,11 +1729,10 @@ app.post("/reset-password", async (req, res) => {
 
     res.render("reset_password", {
       error: null,
-      success: "Password successfully reset! You can now log in."
+      success: "Password successfully reset! You can now log in.",
     });
   });
 });
-
 
 // Logout
 app.get("/logout", (req, res) => {
@@ -1665,7 +1745,7 @@ app.listen(3000, () => {
   console.log("Server running at http://localhost:3000");
 });
 
-// Fallback 
+// Fallback
 app.use((req, res) => {
   res.status(404).send("404 - Page not found");
 });

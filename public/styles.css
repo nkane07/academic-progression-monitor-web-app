@@ -860,6 +860,27 @@ canvas#progressionChart {
   font-weight: bold;
 }
 
+.search-flex {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px; 
+  margin-bottom: 20px;
+}
+
+.search-input-wide {
+  width: 400px;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.search-btn {
+  height: 40px;
+  padding: 0 20px;
+  font-size: 14px;
+}
+
+
 /* move screen size */
 @media screen and (max-width: 768px) {
   main {
