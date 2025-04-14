@@ -21,11 +21,11 @@
           <div class="summary-card">
             <form action="/admin/messages/send" method="POST">
 
-              <!-- group selection -->
+              <!-- pick -->
               <fieldset class="form-section">
                 <legend><strong>Target Group</strong></legend>
 
-                <!-- Type of message -->
+                <!-- drop down -->
                 <div class="form-group">
                   <label for="filter_type">Send to:</label>
                   <select name="filter_type" id="filter_type" onchange="toggleRecipientOptions()" required>
@@ -65,7 +65,7 @@
               </fieldset>
 
 
-              <!-- Message Details -->
+              <!-- Message -->
               <div class="form-section">
                 <div class="form-group">
                   <label for="subject">Subject:</label>

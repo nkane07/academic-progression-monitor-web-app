@@ -28,7 +28,7 @@
       <button type="submit" class="button">Upload</button>
     </form>
 
-    <!-- Upload result banner -->
+    <!-- result banner -->
     <% if (uploadSuccess) { %>
       <div class="alert success" id="uploadBanner">
          CSV uploaded successfully! <%= req.query.count || 0 %> records added.
@@ -38,7 +38,6 @@
       </div>
     <% } %>
 
-    <!-- Recent Uploads Table -->
     <h3> Recently Uploaded Grades</h3>
     <table>
       <thead>
