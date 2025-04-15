@@ -605,6 +605,7 @@ app.post("/student/messages/reply", requireStudent, (req, res) => {
   });
 });
 
+
 // Delete a message
 app.post("/student/messages/:id/delete", requireStudent, (req, res) => {
   const messageId = req.params.id;
@@ -623,28 +624,17 @@ app.post("/student/messages/:id/delete", requireStudent, (req, res) => {
 
 // Send a message to admin
 app.post("/student/messages/contact", requireStudent, (req, res) => {
-  const userId = req.session.userId;
-  const { subject, body } = req.body;
+  const senderId = req.session.userId;
+  const { recipient_id, subject, body } = req.body;
 
-  const advisorQuery = `
-    SELECT user_id FROM users WHERE username = 'admin2' LIMIT 1
+  const insertQuery = `
+    INSERT INTO messages (sender_id, recipient_id, subject, body, sent_at, is_read)
+    VALUES (?, ?, ?, ?, NOW(), 0)
   `;
 
-  conn.query(advisorQuery, (err, results) => {
+  conn.query(insertQuery, [senderId, recipient_id, subject, body], (err) => {
     if (err) throw err;
-    if (results.length === 0) return res.send("Advisor not found.");
-
-    const advisorId = results[0].user_id;
-
-    const insertQuery = `
-      INSERT INTO messages (sender_id, recipient_id, subject, body, sent_at, is_read)
-      VALUES (?, ?, ?, ?, NOW(), 0)
-    `;
-
-    conn.query(insertQuery, [userId, advisorId, subject, body], (err) => {
-      if (err) throw err;
-      res.redirect("/student/messages/contact?sent=1");
-    });
+    res.redirect("/student/messages/contact?sent=1");
   });
 });
 
@@ -764,6 +754,117 @@ app.post("/admin/messages/send", requireAdmin, (req, res) => {
     });
   }
 });
+
+// admin messages - inbox and sent
+app.get("/admin/messages", requireAdmin, (req, res) => {
+  const userId = req.session.userId;
+  const box = req.query.box || "inbox";
+  const search = req.query.search || "";
+  const searchLike = `%${search}%`;
+
+  let query, params;
+
+  if (box === "sent") {
+    query = `
+      SELECT m.message_id, m.subject, m.body, m.sent_at, m.is_read, u.username AS recipient_name
+      FROM messages m
+      JOIN users u ON m.recipient_id = u.user_id
+      WHERE m.sender_id = ?
+      AND (m.subject LIKE ? OR u.username LIKE ?) 
+      ORDER BY m.sent_at DESC
+    `;
+    params = [userId, searchLike, searchLike];
+  } else {
+    query = `
+      SELECT m.message_id, m.subject, m.body, m.sent_at, m.is_read, u.username AS sender_name
+      FROM messages m
+      JOIN users u ON m.sender_id = u.user_id
+      WHERE m.recipient_id = ?
+      AND (m.subject LIKE ? OR u.username LIKE ?)
+      ORDER BY m.sent_at DESC
+    `;
+    params = [userId, searchLike, searchLike];
+  }
+
+  conn.query(query, params, (err, results) => {
+    if (err) throw err;
+    res.render("admin_messages", {
+      messages: results,
+      box,
+      search,
+      req,
+    });
+  });
+});
+
+// Admin view individual message
+app.get("/admin/messages/:id", requireAdmin, (req, res) => {
+  const adminId = req.session.userId;
+  const messageId = req.params.id;
+
+  const messageQuery = `
+    SELECT m.*, u.username AS sender_name 
+    FROM messages m 
+    JOIN users u ON m.sender_id = u.user_id 
+    WHERE (m.recipient_id = ? OR m.sender_id = ?) AND m.message_id = ?
+  `;
+
+  conn.query(messageQuery, [adminId, adminId, messageId], (err, result) => {
+    if (err) throw err;
+    if (result.length === 0) return res.send("Message not found.");
+
+    const message = result[0];
+
+    // Mark as read
+    if (message.recipient_id === adminId) {
+      conn.query(`UPDATE messages SET is_read = 1 WHERE message_id = ?`, [messageId]);
+    }
+
+    // Fetch replies
+    const repliesQuery = `
+      SELECT m.*, u.username AS sender_name
+      FROM messages m
+      JOIN users u ON m.sender_id = u.user_id
+      WHERE m.parent_message_id = ?
+      ORDER BY sent_at ASC
+    `;
+
+    conn.query(repliesQuery, [messageId], (err, replies) => {
+      if (err) throw err;
+
+      res.render("admin_view_messages", {
+        message,
+        replies,
+        req,
+      });
+    });
+  });
+});
+
+app.post("/admin/messages/reply", requireAdmin, (req, res) => {
+  const senderId = req.session.userId;
+  const { parent_id, body } = req.body;
+
+  const recipientQuery = `SELECT sender_id FROM messages WHERE message_id = ?`;
+
+  conn.query(recipientQuery, [parent_id], (err, results) => {
+    if (err) throw err;
+    if (results.length === 0) return res.send("Original message not found.");
+
+    const recipientId = results[0].sender_id;
+
+    const insertQuery = `
+      INSERT INTO messages (sender_id, recipient_id, subject, body, sent_at, is_read, parent_message_id)
+      VALUES (?, ?, 'Re: (reply)', ?, NOW(), 0, ?)
+    `;
+
+    conn.query(insertQuery, [senderId, recipientId, body, parent_id], (err) => {
+      if (err) throw err;
+      res.redirect("/admin/messages/" + parent_id + "?reply_sent=1");
+    });
+  });
+});
+
 
 // admin - see students
 

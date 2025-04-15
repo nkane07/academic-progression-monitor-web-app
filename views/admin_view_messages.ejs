@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Message View</title>
+  <meta name="viewport" content="width=device-width" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+
+<body>
+  <%- include("partials/banner", { req }) %>
+
+  <main class="container">
+    <h2><i class="fas fa-envelope-open-text"></i> Message from <%= message.sender_name %></h2>
+
+    <div class="message-thread">
+      <div class="message original">
+        <p><strong>Subject:</strong> <%= message.subject %></p>
+        <p><strong>Sent:</strong> <%= new Date(message.sent_at).toLocaleString() %></p>
+        <div class="message-body"><%= message.body %></div>
+      </div>
+
+      <% if (replies.length > 0) { %>
+        <h3>Replies</h3>
+        <% replies.forEach(reply => { %>
+          <div class="message reply">
+            <div class="reply-meta">
+              <strong><%= reply.sender_name %></strong>
+              <span>• <%= new Date(reply.sent_at).toLocaleString() %></span>
+            </div>
+            <div class="message-body"><%= reply.body %></div>
+          </div>
+        <% }) %>
+      <% } %>
+
+      <form method="POST" action="/admin/messages/reply" class="reply-form">
+        <input type="hidden" name="parent_id" value="<%= message.message_id %>" />
+        <label for="body"><strong>Reply:</strong></label>
+        <textarea name="body" required placeholder="Write your reply..."></textarea>
+        <button type="submit" class="button"><i class="fas fa-reply"></i> Send Reply</button>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <p>University Portal © <%= currentYear %></p>
+  </footer>
+</body>
+</html>

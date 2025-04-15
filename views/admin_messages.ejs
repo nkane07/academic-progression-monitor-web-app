@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Messages</title>
+  <meta name="viewport" content="width=device-width" />
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+
+<body>
+  <%- include("partials/banner", { req }) %>
+
+  <header class="page-header">
+    <h2>Admin Messages</h2>
+  </header>
+
+  <main class="container">
+
+    <% if (req.query.sent) { %>
+      <div class="alert success">
+        <i class="fas fa-check-circle"></i> Message sent successfully!
+      </div>
+    <% } %>
+
+    <div class="tab-buttons">
+      <a href="/admin/messages?box=inbox" class="button <%= box === 'inbox' ? 'active-tab' : '' %>">Inbox</a>
+      <a href="/admin/messages?box=sent" class="button <%= box === 'sent' ? 'active-tab' : '' %>">Sent</a>
+      <a href="/admin/messages/new" class="button">
+        <i class="fas fa-paper-plane"></i> Compose
+      </a>
+    </div>
+
+    <form method="GET" action="/admin/messages" class="search-form">
+      <input 
+        type="text" 
+        name="search" 
+        placeholder="Search by subject or user" 
+        value="<%= search || '' %>"
+      />
+      <input type="hidden" name="box" value="<%= box %>">
+      <button type="submit"><i class="fas fa-search"></i> Search</button>
+    </form>
+
+    <div class="info-box">
+      <% if (box === 'inbox') { %>
+        <p>This is your inbox. Click a message to read or reply.</p>
+      <% } else { %>
+        <p>These are your sent messages. Click to view or continue the thread.</p>
+      <% } %>
+    </div>
+
+    <% if (messages.length === 0) { %>
+      <p class="empty-state">
+        <% if (box === 'sent') { %>
+          <i class="fas fa-paper-plane"></i> You haven't sent any messages yet.
+        <% } else { %>
+          <i class="fas fa-inbox"></i> You have no new messages.
+        <% } %>
+      </p>
+    <% } else { %>
+      <table>
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Subject</th>
+            <th><%= box === 'sent' ? 'To' : 'From' %></th>
+            <th>Preview</th>
+            <th>Sent</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% messages.forEach(msg => { %>
+            <tr 
+              onclick="window.location='/admin/messages/<%= msg.message_id %>'"
+              style="cursor: pointer;"
+              class="<%= !msg.is_read && box === 'inbox' ? 'unread' : '' %>"
+            >
+              <td>
+                <% if (!msg.is_read && box === 'inbox') { %>
+                  <span class="badge badge-warning"><i class="fas fa-circle"></i> Unread</span>
+                <% } else { %>
+                  <span class="badge badge-success"><i class="fas fa-check-circle"></i> Read</span>
+                <% } %>
+              </td>
+              <td>
+                <%= msg.subject %>
+                <% if (!msg.is_read && box === 'inbox') { %>
+                  <span class="badge badge-warning" style="margin-left: 6px;">New</span>
+                <% } %>
+              </td>
+              <td><%= box === 'sent' ? msg.recipient_name : msg.sender_name %></td>
+              <td><div class="message-preview"><%= msg.body %></div></td>
+              <td><%= new Date(msg.sent_at).toLocaleString() %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+
+  </main>
+
+  <footer>
+    <p>University Portal © <%= currentYear %></p>
+  </footer>
+
+  <script>
+    setTimeout(() => {
+      const alert = document.querySelector('.alert.success');
+      if (alert) {
+        alert.style.transition = 'opacity 0.5s ease';
+        alert.style.opacity = '0';
+        setTimeout(() => alert.remove(), 500);
+      }
+    }, 3000);
+  </script>
+</body>
+</html>
