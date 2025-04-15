@@ -1,10 +1,10 @@
 # 40176951 Academic Progression Monitoring Web App
 
 ## Student Information
-Student Number : 40176951
-Name: Niamh Kane
-Email: nkane07@qub.ac.uk
-Module: CSC7062 - Web Development
+- Student Number : 40176951
+- Name: Niamh Kane
+- Email: nkane07@qub.ac.uk
+- Module: CSC7062 - Web Development
 
 ## Description
 This web app was designed as part of my CSC7062 Web Development module, demonstrating my full stack web development skills using Node.js, Express, MySQL, and EJS templating. The app is designed to assist both students and staff manage academic progression, based on progression rules and CSV-based grade data. Key design principles include use of three tier architecture, MVC pattern, dynamic logic for student progression, secure login, session management, messaging and CSV import tools.
@@ -85,7 +85,7 @@ Displays the student's personal and academic details with the ability to update 
 
 ### 4. Student Grades  
 Lists all modules taken by the student with grades, resits, and outcomes.  
-![Grades](screenshots/student_grades.png)
+![Grades](screenshots/student_records.png)
 
 ### 5. Student Progression  
 Shows automated progression decision based on academic performance.  
@@ -141,11 +141,11 @@ Edit form for modifying an existing module's details.
 
 ### 18. Admin - Messages  
 Lists sent and received messages for admin users.  
-![Admin Messages](screenshots/admin_messages.png)
+???
 
 ### 19. Admin - Send Message  
 Compose a message to individual students or filtered cohorts.  
-![Send Message](screenshots/admin_send_message.png)
+![Send Message](screenshots/admin_messages.png)
 
 ## 20. Forgot Password
 Form to request a temporary password if forgotten.
@@ -165,11 +165,11 @@ Secure form for users to reset their password after logging in with a temporary 
 - All core logic is in app.js - could use modular refactoring
 
 ## Folder Structure 
-/views                      - EJS templates for each page (student/admin)
-/public                     - CSS styles, images, uploads
-/app.js                     - Main application logic and route handlers
-/utils                      - Utility functions (e.g. getAcademicYear)
-academic_progression.sql    - MySQL Database schema and sample data
+- /views                      - EJS templates for each page (student/admin)
+- /public                     - CSS styles, images, uploads
+- /app.js                     - Main application logic and route handlers
+- /utils                      - Utility functions (e.g. getAcademicYear)
+- academic_progression.sql    - MySQL Database schema and sample data
 
 ## References
 All references are listed in technical report
