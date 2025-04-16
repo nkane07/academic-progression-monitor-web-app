@@ -10,7 +10,17 @@
       <a href="/admin/students" class="nav-link">Students</a>
       <a href="/admin/modules" class="nav-link">Modules</a>
       <a href="/admin/grades" class="nav-link">Grades</a>
-      <a href="/admin/messages" class="nav-link">Messages</a>
+      
+        <a href="/admin/messages" class="nav-link">
+          Messages
+          <% if (typeof unreadCount !== 'undefined' && unreadCount > 0) { %>
+            <span class="badge badge-danger"><%= unreadCount %></span>
+          <% } %>
+        </a>
+        </a>
+      
+      
+      
       <a href="/admin/reports" class="nav-link">Reports</a>
       <a href="/admin/upload-csv" class="nav-link">Upload Grades</a>
       <a href="/logout" class="nav-link logout-link">Logout</a>

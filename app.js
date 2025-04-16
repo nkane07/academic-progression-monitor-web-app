@@ -64,9 +64,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// Message badge for student
+// Message banner notifications
 app.use((req, res, next) => {
-  if (req.session && req.session.userRole === "student") {
+  if (req.session && req.session.userId) {
     const unreadQuery = `
       SELECT COUNT(*) AS unreadCount
       FROM messages
@@ -605,7 +605,6 @@ app.post("/student/messages/reply", requireStudent, (req, res) => {
   });
 });
 
-
 // Delete a message
 app.post("/student/messages/:id/delete", requireStudent, (req, res) => {
   const messageId = req.params.id;
@@ -635,6 +634,22 @@ app.post("/student/messages/contact", requireStudent, (req, res) => {
   conn.query(insertQuery, [senderId, recipient_id, subject, body], (err) => {
     if (err) throw err;
     res.redirect("/student/messages/contact?sent=1");
+  });
+});
+
+// Delete admin message
+app.post("/admin/messages/:id/delete", requireAdmin, (req, res) => {
+  const messageId = req.params.id;
+  const userId = req.session.userId;
+
+  const deleteQuery = `
+    DELETE FROM messages
+    WHERE message_id = ? AND recipient_id = ?
+  `;
+
+  conn.query(deleteQuery, [messageId, userId], (err) => {
+    if (err) throw err;
+    res.redirect("/admin/messages");
   });
 });
 
@@ -817,7 +832,9 @@ app.get("/admin/messages/:id", requireAdmin, (req, res) => {
 
     // Mark as read
     if (message.recipient_id === adminId) {
-      conn.query(`UPDATE messages SET is_read = 1 WHERE message_id = ?`, [messageId]);
+      conn.query(`UPDATE messages SET is_read = 1 WHERE message_id = ?`, [
+        messageId,
+      ]);
     }
 
     // Fetch replies
@@ -864,7 +881,6 @@ app.post("/admin/messages/reply", requireAdmin, (req, res) => {
     });
   });
 });
-
 
 // admin - see students
 
@@ -1133,21 +1149,43 @@ app.post("/admin/grades/:id/update", requireAdmin, (req, res) => {
 // Admin CSV upload
 
 app.get("/admin/upload-csv", requireAdmin, (req, res) => {
-  const previewQuery = `
-    SELECT * 
+  const uploadTimeQuery = `
+    SELECT sent_at 
     FROM enrollment 
-    ORDER BY enrollment_id DESC 
-    LIMIT 10
+    ORDER BY sent_at DESC 
+    LIMIT 1
   `;
 
-  conn.query(previewQuery, (err, recentGrades) => {
+  conn.query(uploadTimeQuery, (err, result) => {
     if (err) throw err;
 
-    res.render("admin_upload_csv", {
-      uploadSuccess: req.query.success,
-      currentYear: new Date().getFullYear(),
-      recentGrades,
-      req,
+    if (!result.length) {
+      return res.render("admin_upload_csv", {
+        uploadSuccess: req.query.success,
+        currentYear: new Date().getFullYear(),
+        recentGrades: [],
+        req,
+      });
+    }
+
+    const latestUpload = result[0].sent_at;
+
+    const gradesQuery = `
+   SELECT * 
+   FROM enrollment 
+   WHERE sent_at = ?
+    ORDER BY enrollment_id DESC
+  `;
+
+    conn.query(gradesQuery, [latestUpload], (err, recentGrades) => {
+      if (err) throw err;
+
+      res.render("admin_upload_csv", {
+        uploadSuccess: req.query.success,
+        currentYear: new Date().getFullYear(),
+        recentGrades,
+        req,
+      });
     });
   });
 });
@@ -1165,50 +1203,74 @@ app.post(
     let successfulInserts = 0;
     const failedRows = [];
 
-    fs.createReadStream(req.file.path)
-      .pipe(csv())
-      .on("data", (row) => {
-        if (
-          !row.student_id ||
-          !row.module_code ||
-          !row.grade_result ||
-          isNaN(row.credits_earned)
-        ) {
-          failedRows.push(row);
-        } else {
-          results.push(row);
-        }
-      })
-      .on("end", () => {
-        const insertQuery = `
-        INSERT INTO enrollment (student_id, module_code, grade, grade_result, credits_earned)
-        VALUES (?, ?, ?, ?, ?)
-      `;
+    const userId = req.session.userId; // ✅ pulled from session
 
-        results.forEach((r) => {
-          conn.query(
-            insertQuery,
-            [
-              r.student_id,
-              r.module_code,
-              r.grade,
-              r.grade_result,
-              r.credits_earned,
-            ],
-            (err) => {
-              if (!err) successfulInserts++;
-            }
-          );
-        });
+    if (!userId) {
+      console.error("No user ID in session.");
+      return res.status(401).send("Unauthorized: No user in session.");
+    }
 
-        fs.unlink(req.file.path, () => {
-          res.redirect(
-            `/admin/upload-csv?success=1&count=${successfulInserts}&errors=${failedRows.length}`
-          );
+    // ✅ Look up the username
+    const getUserQuery = `SELECT username FROM users WHERE user_id = ?`;
+
+    conn.query(getUserQuery, [userId], (err, userResult) => {
+      if (err || !userResult.length) {
+        console.error("Could not fetch admin username from DB.");
+        return res.status(500).send("Upload failed — user info missing.");
+      }
+
+      const uploadedBy = userResult[0].username;
+      const uploadTime = new Date();
+
+      fs.createReadStream(req.file.path)
+        .pipe(csv())
+        .on("data", (row) => {
+          if (
+            !row.student_id ||
+            !row.module_code ||
+            !row.grade_result ||
+            isNaN(row.credits_earned)
+          ) {
+            failedRows.push(row);
+          } else {
+            results.push(row);
+          }
+        })
+        .on("end", () => {
+          const insertQuery = `
+            INSERT INTO enrollment (student_id, module_code, grade, grade_result, credits_earned, sent_at, uploaded_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+          `;
+
+          results.forEach((r) => {
+            conn.query(
+              insertQuery,
+              [
+                r.student_id,
+                r.module_code,
+                r.grade || null,
+                r.grade_result,
+                r.credits_earned,
+                uploadTime,
+                uploadedBy,
+              ],
+              (err) => {
+                if (!err) successfulInserts++;
+              }
+            );
+          });
+
+          fs.unlink(req.file.path, () => {
+            res.redirect(
+              `/admin/upload-csv?success=1&count=${successfulInserts}&errors=${failedRows.length}`
+            );
+          });
         });
-      });
+    });
   }
 );
+
+
 
 //admin modules
 app.get("/admin/modules", requireAdmin, (req, res) => {
@@ -1387,7 +1449,7 @@ app.get("/admin/reports", requireAdmin, (req, res) => {
     levelCondition = `HAVING total_credits >= 240`;
   }
 
-  // student totals and av grade
+  // student totals and average grade
   const studentCreditQuery = `
     SELECT 
       s.student_number,
@@ -1791,7 +1853,7 @@ app.post("/forgot-password", async (req, res) => {
   });
 });
 
-// reset password form - appear after using temp password from terminal
+// reset password form - appear after using temporary password from terminal
 
 // Render reset form
 app.get("/reset-password", (req, res) => {

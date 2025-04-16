@@ -95,69 +95,82 @@ Shows automated progression decision based on academic performance.
 Inbox view for students to see messages from admins and respond.  
 ![Messages](screenshots/student_messages.png)
 
-### 7. Admin Dashboard  
+### 7. Student - View Message Thread  
+Displays full message details and allows replying to or deleting a message.  
+![Student Message Thread](screenshots/student_message_thread.png)
+
+### 8. Student - Contact Admin  
+Form for students to send messages directly to an academic advisor.  
+![Contact Admin](screenshots/student_contact_admin.png)
+
+### 9. Admin Dashboard  
 Main interface for admins to manage students, grades, reports, and more.  
 ![Admin Dashboard](screenshots/admin_dashboard.png)
 
-### 8. Admin - View Students  
+### 10. Admin - View Students  
 Searchable list of all students with pagination and level/year display.  
 ![View Students](screenshots/admin_see_students.png)
 
-### 9. Admin - Manage Student  
+### 11. Admin - Manage Student  
 Edit student information including name, pathway, and current year.  
 ![Manage Student](screenshots/admin_manage_student.png)
 
-### 10. Admin - Student Summary  
+### 12. Admin - Student Summary  
 Detailed academic summary of an individual student with ability to override progression.  
-![Summary](screenshots/admin_student_summary.png)
+![Student Summary](screenshots/admin_student_summary.png)
 
-### 11. Admin - Add New Student  
+### 13. Admin - Add New Student  
 Form to register a new student manually into the system.  
 ![Add Student](screenshots/admin_add_new_student.png)
 
-### 12. Admin - Manage Grades  
+### 14. Admin - Manage Grades  
 View and edit individual grade records from enrolment table.  
 ![Manage Grades](screenshots/admin_manage_grades.png)
 
-### 13. Admin - Upload CSV  
+### 15. Admin - Upload CSV  
 Upload multiple student grades at once using a CSV file.  
-![Upload CSV](screenshots/admin_upload_csv.png)
+![Upload CSV](screenshots/admin_upload_csv_update.png)
 
-### 14. Admin - Reports  
+### 16. Admin - Reports  
 Average grades, top failed modules, and progression summaries.  
 ![Reports](screenshots/admin_reports.png)
 
-### 15. Admin - Manage Modules  
+### 17. Admin - Manage Modules  
 Edit existing module details or remove modules from the system.  
 ![Manage Modules](screenshots/admin_manage_modules.png)
 
-### 16. Admin - Add Module  
+### 18. Admin - Add Module  
 Form to create and register a new module.  
 ![Add Module](screenshots/admin_add_module.png)
 
-### 17. Admin - Edit Module  
+### 19. Admin - Edit Module  
 Edit form for modifying an existing module's details.  
 ![Edit Module](screenshots/admin_edit_module.png)
 
-### 18. Admin - Messages  
-Lists sent and received messages for admin users.  
-???
+### 20. Admin - Messages  
+Inbox view of all student-admin messages.  
+![Admin Messages](screenshots/admin_messages.png)
 
-### 19. Admin - Send Message  
-Compose a message to individual students or filtered cohorts.  
-![Send Message](screenshots/admin_messages.png)
+### 21. Admin - View Message Thread  
+Detailed thread view and admin replies to messages.  
+![Message Thread](screenshots/admin_message_thread.png)
 
-## 20. Forgot Password
-Form to request a temporary password if forgotten.
-![Forgot Password](screenshots/forgot_password.png) 
+### 22. Admin - Read vs Unread Messages  
+Status highlighting of messages read/unread.  
+![Read/Unread Messages](screenshots/admin_read_unread_messages.png)
 
-## 21. Forgot Username
-Form to retrieve username via registered email.
+### 23. Forgot Password  
+Form to request a temporary password if forgotten.  
+![Forgot Password](screenshots/forgot_password.png)
+
+### 24. Forgot Username  
+Form to retrieve username via registered email.  
 ![Forgot Username](screenshots/forgot_username.png)
 
-# 22. Reset Password
-Secure form for users to reset their password after logging in with a temporary password.
-![Reset Password](screenshots/reset_password.png)  
+### 25. Reset Password  
+Secure form for users to reset their password after logging in with a temporary password.  
+![Reset Password](screenshots/reset_password.png)
+
 
 ## Known Issues
 - Admin notes only show most recent override note, full edit history is not maintained

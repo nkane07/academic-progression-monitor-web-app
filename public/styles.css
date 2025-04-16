@@ -923,6 +923,9 @@ canvas#progressionChart {
   margin-bottom: 10px;
 }
 
+.missing-grade {
+  background-color: #ffe6e6;
+}
 
 /* move screen size */
 @media screen and (max-width: 768px) {

@@ -39,6 +39,14 @@
     <% } %>
 
     <h3> Recently Uploaded Grades</h3>
+
+    <% if (recentGrades.length > 0) { %>
+      <p class="upload-meta">
+        <strong>Uploaded on:</strong> <%= new Date(recentGrades[0].sent_at).toLocaleString() %><br>
+        <strong>Uploaded by:</strong> <%= recentGrades[0].uploaded_by %>
+      </p>
+    <% } %>
+    
     <table>
       <thead>
         <tr>
@@ -51,14 +59,22 @@
       </thead>
       <tbody>
         <% recentGrades.forEach(row => { %>
-          <tr>
+          <tr class="<%= !row.grade ? 'missing-grade' : '' %>">
             <td><%= row.student_id %></td>
             <td><%= row.module_code %></td>
-            <td><%= row.grade || '-' %></td>
-            <td><%= row.grade_result %></td>
-            <td><%= row.credits_earned %></td>
+            <td><%= row.grade !== null && row.grade !== '' ? row.grade : '-' %></td>
+            <td><%= row.grade_result || '-' %></td>
+            <td><%= row.credits_earned !== null ? row.credits_earned : '-' %></td>
           </tr>
         <% }) %>
+
+        <% if (recentGrades.length > 0) { %>
+          <p class="upload-meta">
+            <strong>Uploaded on:</strong> <%= new Date(recentGrades[0].sent_at).toLocaleString() %>
+          </p>
+        <% } %>
+        
+        
       </tbody>
     </table>
 

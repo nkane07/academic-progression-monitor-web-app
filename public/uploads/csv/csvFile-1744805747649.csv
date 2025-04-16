@@ -1,0 +1,4 @@
+student_id,module_code,grade,grade_result,credits_earned
+21-IFSY-0000001,CSC1023,65,pass,20
+21-IFSY-0000002,CSC1024,48,pass capped,20
+21-IFSY-0000003,CSC1025,0,absent,0
