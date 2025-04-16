@@ -22,9 +22,10 @@
 
       <p class="admin-note">
         <i class="fas fa-info-circle"></i> 
-        CSV must include: <strong>student_id, module_code, grade, result, credits</strong>.
+        CSV must include headers: 
+        <strong>student_id, module_code, grade, grade_result, credits_earned</strong>
       </p>
-
+      
       <button type="submit" class="button">Upload</button>
     </form>
 
@@ -67,12 +68,6 @@
             <td><%= row.credits_earned !== null ? row.credits_earned : '-' %></td>
           </tr>
         <% }) %>
-
-        <% if (recentGrades.length > 0) { %>
-          <p class="upload-meta">
-            <strong>Uploaded on:</strong> <%= new Date(recentGrades[0].sent_at).toLocaleString() %>
-          </p>
-        <% } %>
         
         
       </tbody>

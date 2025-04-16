@@ -129,7 +129,7 @@ View and edit individual grade records from enrolment table.
 
 ### 15. Admin - Upload CSV  
 Upload multiple student grades at once using a CSV file.  
-![Upload CSV](screenshots/admin_upload_csv_update.png)
+![Upload CSV](screenshots/admin_CSV_correct.png)
 
 ### 16. Admin - Reports  
 Average grades, top failed modules, and progression summaries.  
