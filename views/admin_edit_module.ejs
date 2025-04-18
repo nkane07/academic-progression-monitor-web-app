@@ -16,8 +16,11 @@
     </div>
 
     <div class="summary-card">
+
+      <!-- Form submits updated module data via POST to the update route -->
       <form action="/admin/modules/<%= module.module_id %>/update" method="POST">
 
+         <!-- Module name-->
         <div class="form-group">
           <label for="module_name">Module Name:</label>
           <input 
@@ -28,6 +31,7 @@
             required>
         </div>
 
+        <!--module code-->
         <div class="form-group">
           <label for="module_code">Module Code:</label>
           <input 
@@ -38,6 +42,7 @@
             required>
         </div>
 
+        <!--credits (0-120)-->
         <div class="form-group">
           <label for="credit_value">Credit Value:</label>
           <input 
@@ -51,6 +56,7 @@
             required>
         </div>
 
+        <!--pathway-->
         <div class="form-group">
           <label for="degree_programme_code">Pathway Code:</label>
           <input 
@@ -61,6 +67,7 @@
             required>
         </div>
 
+        <!--semester dropdown menu-->
         <div class="form-group">
           <label for="semester">Semester:</label>
           <select name="semester" id="semester" required>
@@ -70,11 +77,13 @@
           </select>
         </div>
 
+        <!--submit buttom-->
         <button type="submit" class="button">Update Module</button>
       </form>
     </div>
   </main>
 
+  <!-- Footer displaying current year dynamically -->
   <footer>
     <p>University Portal © <%= currentYear %></p>
   </footer>

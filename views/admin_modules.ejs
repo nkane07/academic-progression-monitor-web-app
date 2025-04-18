@@ -24,15 +24,19 @@
       <div id="alertDeleted" class="alert success">Module deleted successfully!</div>
     <% } %>
 
-    <!-- Search Form -->
+    <!-- Search Form - filter by code or name-->
     <form class="search-form admin-module-search" method="GET" action="/admin/modules">
       <div class="input-wrapper">
+
+         <!-- Text input retains previous search value -->
         <input 
           type="text" 
           name="search" 
           value="<%= search %>" 
           placeholder="Search module code or name..."
         />
+
+          <!-- Reset button clears the search when clicked -->
         <% if (search) { %>
           <button type="submit" class="reset-icon" name="search" value="">&times;</button>
         <% } %>
@@ -40,6 +44,7 @@
       <button type="submit" class="button">Search</button>
     </form>
 
+     <!-- Display total number of modules found -->
     <p class="page-label"><%= totalModules %> module<%= totalModules !== 1 ? 's' : '' %> found</p>
 
     <!-- Modules Table -->
@@ -55,6 +60,8 @@
         </tr>
       </thead>
       <tbody>
+
+         <!-- Loop through each module and render a row -->
         <% modules.forEach(mod => { %>
           <tr>
             <td><%= mod.module_code %></td>
@@ -63,7 +70,10 @@
             <td><%= mod.degree_programme_code %></td>
             <td>Semester <%= mod.semester %></td>
             <td>
+
+                <!-- Edit button links to the edit form for this module -->
               <a href="/admin/modules/<%= mod.module_id %>/edit" class="button">Edit</a>
+              <!-- Inline delete form with confirmation -->
               <form 
                 action="/admin/modules/<%= mod.module_id %>/delete" 
                 method="POST" 
@@ -80,14 +90,17 @@
 
     <!-- Pagination -->
     <% if (modules.length > 0) { %>
+       <!-- Display current page / total pages -->
       <p class="page-label">Page <%= currentPage %> of <%= totalPages %></p>
 
       <div class="pagination">
+        <!-- Link to previous page if not on page 1 -->
         <% if (currentPage > 1) { %>
           <a href="?page=<%= currentPage - 1 %>&search=<%= search %>" class="page-button">Previous</a>
         <% } %>
 
         <% 
+        <!-- Compute visible page range -->
           const maxVisible = 5;
           let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
           let endPage = Math.min(totalPages, startPage + maxVisible - 1);
@@ -96,6 +109,7 @@
           }
         %>
 
+         <!-- Render page number links -->
         <% for (let i = startPage; i <= endPage; i++) { %>
           <a 
             href="?page=<%= i %>&search=<%= search %>" 
@@ -105,6 +119,7 @@
           </a>
         <% } %>
 
+        <!-- Link to next page if not on the last page -->
         <% if (currentPage < totalPages) { %>
           <a href="?page=<%= currentPage + 1 %>&search=<%= search %>" class="page-button">Next</a>
         <% } %>
@@ -112,10 +127,12 @@
     <% } %>
   </main>
 
+  <!-- Footer displaying current year dynamically -->
   <footer>
     <p>University Portal © <%= currentYear %></p>
   </footer>
 
+   <!--hide all alerts after 4 seconds -->
   <script>
     ['alertAdded', 'alertUpdated', 'alertDeleted'].forEach(id => {
       const el = document.getElementById(id);

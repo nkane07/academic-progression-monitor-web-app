@@ -10,7 +10,8 @@
   <main class="page-container">
     <h1>Forgot Username</h1>
 
-    <!-- Alert messages -->
+    <!-- Alert messages - if username is set, show recovered username.
+    if error - error message. -->
     <% if (username) { %>
       <div class="alert success">
         Your username is: <strong><%= username %></strong>
@@ -19,7 +20,8 @@
       <div class="alert error"><%= error %></div>
     <% } %>
 
-    <!-- Username recovery form -->
+    <!-- Form to request username recovery.
+      Submits via POST to `/forgot-username`. -->
     <form action="/forgot-username" method="POST" class="summary-card">
       <div class="form-group">
         <label for="email">Enter your registered email:</label>
@@ -30,6 +32,7 @@
         <input type="email" name="email" id="email" required>
       </div>
 
+          <!-- Buttons to submit the form or return to the login page -->
       <div class="button-group" style="display: flex; gap: 1rem; margin-top: 1rem;">
         <button type="submit" class="button">Recover Username</button>
         <a href="/" class="button-outline">Back to Login</a>
@@ -37,6 +40,7 @@
     </form>
   </main>
 
+   <!-- Footer displaying the current year dynamically -->
   <footer>
     <p>University Portal © <%= new Date().getFullYear() %></p>
   </footer>

@@ -27,7 +27,7 @@
       </div>
     <% } %>
 
-  
+    <!-- Search form to filter students by name, number, or pathway -->
     <form method="GET" action="/admin/students" class="search-form search-flex">
       <input 
         type="text" 
@@ -60,7 +60,9 @@
             <td><%= s.student_number %></td>
             <td><%= s.pathway %></td>
             <td><%= s.level %></td>
+              <!-- Link to view detailed summary -->
             <td><a href="/admin/students/<%= s.user_id %>/summary" class="button">Summary</a></td>
+            <!-- Link to manage the student's record -->
             <td><a href="/admin/students/<%= s.user_id %>" class="button">Manage</a></td>
           </tr>
         <% }) %>
@@ -70,10 +72,12 @@
     <!-- Pagination -->
     <p class="page-label">Page <%= currentPage %> of <%= totalPages %></p>
     <div class="pagination">
+        <!-- Previous page button -->
       <% if (currentPage > 1) { %>
         <a href="/admin/students?page=<%= currentPage - 1 %>" class="page-button">Previous</a>
       <% } %>
 
+      <!--visible page numbers -->
       <% 
         const maxVisible = 5;
         let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
@@ -83,12 +87,14 @@
         }
       %>
 
+       <!-- Render page number links -->
       <% for (let i = startPage; i <= endPage; i++) { %>
         <a href="/admin/students?page=<%= i %>" class="page-button <%= i === currentPage ? 'active' : '' %>">
           <%= i %>
         </a>
       <% } %>
 
+      <!-- Next page button -->
       <% if (currentPage < totalPages) { %>
         <a href="/admin/students?page=<%= currentPage + 1 %>" class="page-button">Next</a>
       <% } %>
@@ -96,11 +102,12 @@
 
   </main>
 
+  <!-- Footer displaying current year dynamically -->
   <footer>
     <p>University Portal © <%= currentYear %></p>
   </footer>
 
-  
+  <!-- hide alert banners after 4 seconds -->
   <script>
     ['deleteBanner', 'addBanner'].forEach(id => {
       const el = document.getElementById(id);

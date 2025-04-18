@@ -6,17 +6,20 @@
 </head>
 <body>
 
+  <!--Banner-->
   <%- include("partials/banner", { req }) %>
 
   <main class="page-container">
     <h1>Add New Student</h1>
 
+    <!--successfully added alert-->
     <% if (req.query.added) { %>
       <div class="alert success">
       Student was successfully added.
       </div>
     <% } %>
 
+    <!--enter new student details-->
     <form action="/admin/students/new" method="POST">
 
       <div class="form-group">
@@ -29,6 +32,7 @@
         <input id="last_name" name="last_name" required />
       </div>
 
+      <!--pathway drop down-->
       <div class="form-group">
         <label for="pathway">Pathway:</label>
         <select id="pathway" name="pathway">
@@ -37,12 +41,14 @@
         </select>
       </div>
 
+      <!--generated student number-->
       <div class="form-group">
         <label>Generated Student Number:</label>
         <div id="studentNumberPreview" class="student-number-preview"></div>
         <input type="hidden" id="studentNumberInput" name="student_number" />
       </div>
 
+      <!--year selection drop down-->
       <div class="form-group">
         <label for="level">Level / Year:</label>
         <select id="level" name="level">
@@ -52,6 +58,7 @@
         </select>
       </div>
 
+      <!--submit button-->
       <div class="form-group">
         <button type="submit" class="button">Add Student</button>
       </div>
@@ -63,6 +70,7 @@
     <p>University Portal © <%= currentYear %></p>
   </footer>
 
+  <!--generate student number from current year, pathway and random numbers-->
   <script>
     function generateStudentNumber(pathway) {
       const year = new Date().getFullYear().toString().slice(-2);
@@ -75,21 +83,28 @@
       return `${year}-${pathwayCode}-${randomDigits}`;
     }
 
+    // references to DOM elements for pathway, preview and hidden input
     const pathwaySelect = document.querySelector('select[name="pathway"]');
     const previewSpan = document.getElementById("studentNumberPreview");
     const studentNumberInput = document.getElementById("studentNumberInput");
 
+    //update with generated student number
     function updatePreview() {
       const pathway = pathwaySelect.value;
       const generatedNumber = generateStudentNumber(pathway);
+      // show generated student number
       previewSpan.textContent = generatedNumber;
+      // store hidden input so it gets submitted
       studentNumberInput.value = generatedNumber;
     }
 
+    // change student number when pathway changes
     pathwaySelect.addEventListener("change", updatePreview);
+    //generate initial student number when page loads
     window.onload = () => {
       updatePreview();
 
+      //hide success message after 4 seconds
       const banner = document.getElementById("successBanner");
       if (banner) {
         setTimeout(() => {

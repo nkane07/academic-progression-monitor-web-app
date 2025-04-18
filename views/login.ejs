@@ -23,12 +23,14 @@
         </div>
       </div>
 
+         <!-- Display an error alert if login failed - EJS variable error -->
       <% if (typeof error !== 'undefined' && error) { %>
         <div class="alert error">
           <%= error %>
         </div>
       <% } %>
 
+        <!-- Login form - posts credentials to /login -->
       <form method="POST" action="/login" class="login-form">
         <div class="form-group">
           <label for="userField">User ID</label>
@@ -43,6 +45,7 @@
           >
         </div>
 
+        <!-- Password input (min length 6) -->
         <div class="form-group">
           <label for="password">Password</label>
           <input
@@ -55,6 +58,7 @@
           >
         </div>
 
+           <!-- Submit button -->
         <div class="form-group">
           <button type="submit" class="login-button">
             Sign In
@@ -62,12 +66,14 @@
         </div>
       </form>
 
+       <!-- Links for account help - forgot username/password -->
       <div class="login-support">
         <i class="fas fa-question-circle"></i>
         <a href="/forgot-username">Forgot Username</a> |
         <a href="/forgot-password">Forgot Password</a>
       </div>
 
+       <!-- Support contact info -->
       <div class="login-support">
         <i class="fas fa-headset"></i>
         Need help? Contact support:
@@ -80,6 +86,7 @@
         </a>
       </div>
 
+      <!-- Footer displaying the current year dynamically -->
       <footer>
         <p>University Portal © <%= currentYear %></p>
       </footer>

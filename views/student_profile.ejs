@@ -16,10 +16,14 @@
 
   <main class="container">
 
+      <!-- Greeting the student by name, using EJS to insert first and last name -->
     <h3 class="profile-welcome">Welcome, <%= student.first_name %> <%= student.last_name %></h3>
   
+       <!-- Summary card showing current profile details -->
     <div class="summary-card profile-card">
       <div class="profile-header">
+
+         <!-- Profile image section -->
         <div class="profile-image">
           <img 
             src="<%= student.profile_image ? student.profile_image : '/images/default-profile.png' %>" 
@@ -28,35 +32,45 @@
           >
         </div>
   
+         <!-- Profile details section -->
         <div class="profile-details">
           <p><strong><i class="fa-solid fa-id-badge"></i> Student Number:</strong> <%= student.student_number %></p>
+          <!-- Pathway of study with icon -->
           <p><strong><i class="fa-solid fa-diagram-project"></i> Pathway:</strong> <%= student.pathway %></p>
+             <!-- Current level or stage with icon -->
           <p><strong><i class="fa-solid fa-graduation-cap"></i> Level / Stage:</strong> <%= student.current_level %></p>
   
+          <!-- Progress label and bar showing % through the program year -->
           <div class="progress-label">Year <%= currentYearDisplay %> Progress</div>
           <div class="progress-container">
             <div class="progress-bar" 
               style="width: <%= currentYearDisplay * 33.33 %>%; 
                      background-color: <%= currentYearDisplay == 1 ? '#fbbc04' : currentYearDisplay == 2 ? '#34a853' : '#0f9d58' %>;">
-              <span class="progress-text"><%= (currentYearDisplay * 33.33).toFixed(0) %>%</span>
+              <!-- Text inside bar showing rounded percentage -->
+             <span class="progress-text"><%= (currentYearDisplay * 33.33).toFixed(0) %>%</span>
             </div>
           </div>
   
+            <!-- Contact email with icon -->
           <p><strong><i class="fa-solid fa-envelope"></i> Email:</strong> <%= student.contact_email %></p>
+             <!-- Secondary email or 'None' if not set -->
           <p><strong><i class="fa-solid fa-at"></i> Secondary Email:</strong> <%= student.secondary_email || 'None' %></p>
+            <!-- Phone number or 'None' if not provided -->
           <p><strong><i class="fa-solid fa-phone"></i> Phone:</strong> <%= student.phone_number || 'None' %></p>
         </div>
       </div>
     </div>
-  
+      <!-- Form to update profile image and secondary email -->
     <form action="/student/profile/update" method="POST" enctype="multipart/form-data" class="summary-card">
       <h4><i class="fa-solid fa-user-pen"></i> Edit Profile</h4>
   
+       <!-- File input for uploading a new profile image -->
       <div class="form-group">
         <label for="profile_image">Upload Profile Image:</label>
         <input type="file" id="profile_image" name="profile_image">
       </div>
   
+        <!-- Input for updating secondary email -->
       <div class="form-group">
         <label for="secondary_email">Secondary Email:</label>
         <input 
@@ -67,18 +81,20 @@
         >
       </div>
   
+       <!-- Submit button to apply updates -->
       <div class="form-group">
         <button type="submit" class="button">
           <i class="fa-solid fa-floppy-disk"></i> Update
         </button>
       </div>
+          <!-- Note that leaving fields blank preserves existing data -->
       <p class="note"><em>Leave fields blank to keep your current email or image.</em></p>
     </form>
   
    
   </main>
   
-
+ <!-- Footer displaying the current year dynamically -->
   <footer>
     <p>University Portal © <%= currentYear %></p>
   </footer>

@@ -17,32 +17,39 @@
 
   <main class="container">
 
+      <!-- Success alert -->
     <% if (req.query.sent) { %>
       <div class="alert success">
         <i class="fas fa-check-circle"></i> Message sent successfully!
       </div>
     <% } %>
 
+    <!-- Form for students to send a message to admin -->
     <form method="POST" action="/student/messages/contact" class="styled-form">
+        <!-- Recipient selection dropdown -->
       <div class="form-group">
         <label for="recipient_id">Send to:</label>
         <select name="recipient_id" id="recipient_id" required>
+            <!-- Placeholder option -->
           <option value="" disabled selected>Select admin</option>
+           <!-- Hardcoded admin options-->
           <option value="1">Admin 1</option>
           <option value="2">Admin 2</option>
         </select>
       </div>
 
+        <!-- Subject input -->
       <div class="form-group">
         <label for="subject">Subject:</label>
         <input type="text" id="subject" name="subject" placeholder="e.g. Question about grades" required />
       </div>
 
+           <!-- Message body text area -->
       <div class="form-group">
         <label for="body">Message:</label>
         <textarea id="body" name="body" rows="5" placeholder="Type your message here..." required></textarea>
       </div>
-
+        <!-- Submit button with icon -->
       <button type="submit" class="button">
         <i class="fas fa-paper-plane"></i> Send Message
       </button>
@@ -50,10 +57,12 @@
 
   </main>
 
+   <!-- Footer displaying the current year dynamically -->
   <footer>
     <p>University Portal © <%= currentYear %></p>
   </footer>
 
+    <!-- hide success alert after 4 seconds -->
   <script>
     setTimeout(() => {
       const alert = document.querySelector('.alert.success');
@@ -62,7 +71,7 @@
         alert.style.opacity = '0';
         setTimeout(() => alert.remove(), 500);
       }
-    }, 3000);
+    }, 4000);
   </script>
 </body>
 </html>

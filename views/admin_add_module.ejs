@@ -6,35 +6,42 @@
 </head>
 <body>
 
+   <!-- shared banner -->
   <%- include("partials/banner", { req }) %>
 
   <main class="page-container">
     <h1>Add New Module</h1>
 
+    <!-- Success message banner -->
     <% if (req.query.added) { %>
       <div id="successBanner" class="alert success">
         Module added successfully!
       </div>
     <% } %>
 
+     <!-- Error message -->
     <% if (req.query.duplicate) { %>
       <div class="alert error">
         A module with this code already exists.
       </div>
     <% } %>
 
+     <!-- Form to submit a new module-->
     <form action="/admin/modules/new" method="post" class="form-section">
 
+      <!-- Module name -->
       <div class="form-group">
         <label for="module_name">Module Name:</label>
         <input type="text" id="module_name" name="module_name" required>
       </div>
 
+      <!-- Module code -->
       <div class="form-group">
         <label for="module_code">Module Code:</label>
         <input type="text" id="module_code" name="module_code" required>
       </div>
 
+       <!-- Credit value - 0–120 int -->
       <div class="form-group">
         <label for="credit_value">Credit Value:</label>
         <input 
@@ -47,11 +54,13 @@
           required>
       </div>
 
+      <!-- Degree programme / pathway-->
       <div class="form-group">
         <label for="degree_programme_code">Pathway Code (e.g. IFSY, BSAS):</label>
         <input type="text" id="degree_programme_code" name="degree_programme_code" required>
       </div>
 
+       <!-- Semester dropdown -->
       <div class="form-group">
         <label for="semester">Semester:</label>
         <select id="semester" name="semester" required>
@@ -62,6 +71,7 @@
         </select>
       </div>
 
+       <!-- Submit button for the form -->
       <div class="form-group">
         <button type="submit" class="button">Add Module</button>
       </div>
@@ -69,10 +79,12 @@
     </form>
   </main>
 
+  <!-- Footer displaying current year dynamically -->
   <footer>
     <p>University Portal © <%= currentYear %></p>
   </footer>
 
+  <!-- Hide success banner after 4 seconds -->
   <script>
     setTimeout(() => {
       const banner = document.getElementById('successBanner');

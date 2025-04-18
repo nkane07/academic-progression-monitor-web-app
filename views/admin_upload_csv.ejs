@@ -17,30 +17,37 @@
     <form action="/admin/upload-grades" method="POST" enctype="multipart/form-data" class="form-section">
       <div class="form-group">
         <label for="csvFile">Select CSV File:</label>
+        <!-- File input accepts only csv files and is required -->
         <input type="file" name="csvFile" id="csvFile" accept=".csv" required>
       </div>
 
+       <!-- Note about required CSV headers -->
       <p class="admin-note">
         <i class="fas fa-info-circle"></i> 
         CSV must include headers: 
         <strong>student_id, module_code, grade, grade_result, credits_earned</strong>
       </p>
-      
+          <!-- Submit button -->
       <button type="submit" class="button">Upload</button>
     </form>
 
     <!-- result banner -->
     <% if (uploadSuccess) { %>
       <div class="alert success" id="uploadBanner">
-         CSV uploaded successfully! <%= req.query.count || 0 %> records added.
+          <!-- Show how many records were added -->
+         CSV uploaded successfully! 
+         <%= req.query.count || 0 %> records added.
+          <!-- If any rows were skipped, display the count -->
         <% if (req.query.errors > 0) { %>
            <%= req.query.errors %> row(s) skipped due to invalid data.
         <% } %>
       </div>
     <% } %>
 
+    <!--recently uploaded grades-->
     <h3> Recently Uploaded Grades</h3>
 
+      <!-- Show data if there is at least one recent upload -->
     <% if (recentGrades.length > 0) { %>
       <p class="upload-meta">
         <strong>Uploaded on:</strong> <%= new Date(recentGrades[0].sent_at).toLocaleString() %><br>
@@ -48,6 +55,7 @@
       </p>
     <% } %>
     
+      <!-- Table of the most recent uploaded rows -->
     <table>
       <thead>
         <tr>
@@ -60,11 +68,15 @@
       </thead>
       <tbody>
         <% recentGrades.forEach(row => { %>
+            <!-- Highlight rows missing a grade -->
           <tr class="<%= !row.grade ? 'missing-grade' : '' %>">
             <td><%= row.student_id %></td>
             <td><%= row.module_code %></td>
+             <!-- Show grade or '-' if null/empty -->
             <td><%= row.grade !== null && row.grade !== '' ? row.grade : '-' %></td>
+            <!-- Show grade_result or '-' -->
             <td><%= row.grade_result || '-' %></td>
+            <!-- Show credits_earned or '-' -->
             <td><%= row.credits_earned !== null ? row.credits_earned : '-' %></td>
           </tr>
         <% }) %>
@@ -75,10 +87,12 @@
 
   </main>
 
+  <!-- Footer displaying current year dynamically -->
   <footer>
     <p>University Portal © <%= currentYear %></p>
   </footer>
 
+   <!-- hide the result banner after 4 seconds -->
   <script>
     setTimeout(() => {
       const banner = document.getElementById("uploadBanner");

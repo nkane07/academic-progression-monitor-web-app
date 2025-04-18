@@ -25,6 +25,7 @@
           </tr>
         </thead>
         <tbody>
+          <!-- Loop through pathwayStats array to render each row -->
           <% stats.pathwayStats.forEach(p => { %>
             <tr>
               <td><%= p.pathway %></td>
@@ -49,6 +50,7 @@
           </tr>
         </thead>
         <tbody>
+          <!-- Loop through failedModules array -->
           <% stats.failedModules.forEach(mod => { %>
             <tr>
               <td><%= mod.module_code %></td>
@@ -73,6 +75,7 @@
             </tr>
           </thead>
           <tbody>
+              <!-- Loop through resitStats array -->
             <% stats.resitStats.forEach(mod => { %>
               <tr>
                 <td><%= mod.module_code %></td>
@@ -83,6 +86,7 @@
           </tbody>
         </table>
       <% } else { %>
+        <!-- Display message if theres no resit data -->
         <p>No resit statistics available.</p>
       <% } %>
     </section>
@@ -91,10 +95,12 @@
     <section class="summary-card">
       <h3>Progression Rates by Pathway</h3>
 
+       <!-- Filter form - select academic year and pathway, auto submit on change -->
       <form method="get" action="/admin/reports" class="filter-form">
         <div class="filter-group">
           <label for="level">Academic Year:</label>
           <select name="level" id="level" onchange="this.form.submit()">
+              <!-- "all" / specific year options -->
             <option value="all" <%= selectedLevel === 'all' ? 'selected' : '' %>>All Years</option>
             <option value="1" <%= selectedLevel === '1' ? 'selected' : '' %>>Year 1</option>
             <option value="2" <%= selectedLevel === '2' ? 'selected' : '' %>>Year 2</option>
@@ -103,6 +109,7 @@
 
           <label for="pathway">Pathway:</label>
           <select name="pathway" id="pathway" onchange="this.form.submit()">
+              <!-- "all" or specific pathway options -->
             <option value="all" <%= selectedPathway === 'all' ? 'selected' : '' %>>All Pathways</option>
             <option value="Information Systems" <%= selectedPathway === 'Information Systems' ? 'selected' : '' %>>Information Systems</option>
             <option value="Business Data Analytics" <%= selectedPathway === 'Business Data Analytics' ? 'selected' : '' %>>Business Data Analytics</option>
@@ -110,10 +117,12 @@
         </div>
       </form>
 
+         <!-- Button to clear filters -->
       <form method="get" action="/admin/reports" class="clear-filters-form">
         <button type="submit" class="button secondary">Clear Filters</button>
       </form>
 
+      <!-- Summary table of progression rates -->
       <table>
         <thead>
           <tr>
@@ -124,6 +133,7 @@
           </tr>
         </thead>
         <tbody>
+           <!-- Loop through progressionSummary  -->
           <% for (let path in stats.progressionSummary) {
                const d = stats.progressionSummary[path];
                const rate = ((d.progressing / d.total) * 100).toFixed(1);
@@ -152,16 +162,20 @@
     <p>University Portal © <%= currentYear %></p>
   </footer>
 
+    <!-- Include Chart.js library -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+       // Get 2D drawing context for the chart
       const ctx = document.getElementById("progressionChart").getContext("2d");
 
+       // Prepare chart labels and data from progressionSummary
       const labels = <%- JSON.stringify(Object.keys(stats.progressionSummary)) %>;
       const data = <%- JSON.stringify(Object.values(stats.progressionSummary).map(p =>
         p.total ? ((p.progressing / p.total) * 100).toFixed(2) : 0
       )) %>;
 
+        // Initialize a bar chart showing progression percentages
       new Chart(ctx, {
         type: 'bar',
         data: {
@@ -169,6 +183,7 @@
           datasets: [{
             label: 'Progression %',
             data,
+            // two bar chart colours
             backgroundColor: ['#b31b1b', '#b38d1b']
           }]
         },

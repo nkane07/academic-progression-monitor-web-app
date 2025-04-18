@@ -14,11 +14,12 @@
 
   <main class="container">
     
+       <!-- Student identity section -->
     <h3><%= student.first_name %> <%= student.last_name %></h3>
     <p><strong>Student Number:</strong> <%= student.student_number %></p>
     <p><strong>Pathway:</strong> <%= student.pathway %></p>
 
-    <!-- grades -->
+    <!-- grades table -->
     <h3>Module Grades</h3>
     <table>
       <thead>
@@ -43,19 +44,22 @@
       </tbody>
     </table>
 
-    <!-- progress summary -->
+    <!-- progression summary -->
     <h3><i class="fas fa-clipboard-check"></i> Progression Summary</h3>
 
+     <!-- Total credits earned versus required -->
     <p>
       <strong><i class="fas fa-coins"></i> Total Credits:</strong>
       <%= totalCredits %> / <%= requiredCredits %>
     </p>
+     <!-- Progress bar width and colour based on completion -->
     <div class="progress-container">
       <div class="progress-bar" style="width: <%= Math.min((totalCredits / requiredCredits) * 100, 100) %>%; background-color: <%= totalCredits >= requiredCredits ? '#28a745' : '#ffc107' %>;">
         <span class="progress-text"><%= Math.round((totalCredits / requiredCredits) * 100) %>%</span>
       </div>
     </div>
 
+      <!-- Average grade bar -->
     <p>
       <strong><i class="fas fa-percent"></i> Average Grade:</strong>
       <%= averageGrade %>%
@@ -66,6 +70,7 @@
       </div>
     </div>
 
+      <!-- Lists of failed and resit modules -->
     <p>
       <strong><i class="fas fa-times-circle"></i> Failed Modules:</strong>
       <%= failedModules.length ? failedModules.join(', ') : 'None' %>
@@ -76,6 +81,7 @@
       <%= resitModules.length ? resitModules.join(', ') : 'None' %>
     </p>
 
+     <!-- Conditional list of failed core modules -->
     <% if (coreFails.length > 0) { %>
       <p>
         <strong><i class="fas fa-exclamation-circle"></i> Failed Core Modules:</strong>
@@ -83,6 +89,7 @@
       </p>
     <% } %>
 
+       <!-- Conditional list of modules with excessive fails -->
     <% if (exceededAttempts.length > 0) { %>
       <p>
         <strong><i class="fas fa-redo-alt"></i> Modules with 4+ Fails:</strong>
@@ -98,6 +105,7 @@
       </span>
     </p>
 
+     <!-- Show overridden decision if set manually by admin -->
     <% if (manualDecision) { %>
       <p>
         <strong><i class="fas fa-user-shield"></i> Overridden Decision:</strong>
@@ -113,6 +121,7 @@
       <label for="manual_decision">Set Manual Progression Decision:</label>
       <select name="manual_decision" id="manual_decision" required>
         <option value="">-- Select Decision --</option>
+         <!-- Pre select the current manual decision if present -->
         <option value="Eligible to Progress" <%= manualDecision === "Eligible to Progress" ? "selected" : "" %>>Eligible to Progress</option>
         <option value="Progression Denied - Mitigation" <%= manualDecision === "Progression Denied - Mitigation" ? "selected" : "" %>>Progression Denied - Mitigation</option>
         <option value="Repeat Year with Support" <%= manualDecision === "Repeat Year with Support" ? "selected" : "" %>>Repeat Year with Support</option>
@@ -146,12 +155,14 @@
         </tbody>
       </table>
     <% } else { %>
+        <!-- Message when no history is available -->
       <p class="no-history-message">
         No progression decisions recorded yet for this student.
       </p>
     <% } %>
   </main>
 
+  <!-- Footer displaying current year dynamically -->
   <footer>
     <p>University Portal © <%= new Date().getFullYear() %></p>
   </footer>

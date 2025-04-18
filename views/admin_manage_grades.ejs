@@ -11,10 +11,11 @@
   <main class="page-container">
     <div class="page-header">
       <h1>Manage Grades</h1>
+      <!--link to upload csv page-->
       <a href="/admin/upload-csv" class="button">Upload CSV</a>
     </div>
 
-
+    <!--form to filter by student/ module-->
     <form action="/admin/grades" method="get" class="search-form">
       <input 
         type="text" 
@@ -22,18 +23,21 @@
         placeholder="Search student/module..." 
         value="<%= search %>"
       />
+      <!--clear search with X-->
       <% if (search) { %>
         <a href="/admin/grades" class="clear-search">✕</a>
       <% } %>
       <button type="submit" class="button">Search</button>
     </form>
 
+    <!--error alert when no grades found-->
     <% if (grades.length === 0 && search) { %>
       <div class="alert error">
         No results found for "<%= search %>". Please try again.
       </div>
     <% } %>
 
+    <!--if grades found - render in a table-->
     <% if (grades.length > 0) { %>
       <table>
         <thead>
@@ -48,10 +52,14 @@
           </tr>
         </thead>
         <tbody>
+          <!--loop through grade records-->
           <% grades.forEach(g => { %>
             <tr>
+              <!--display student name and module code-->
               <td><%= g.first_name %> <%= g.last_name %></td>
               <td><%= g.module_code %></td>
+
+              <!--update enrolment-->
               <form action="/admin/grades/<%= g.enrollment_id %>/update" method="POST">
                 <td>
                   <input 
@@ -64,6 +72,8 @@
                   />
                 </td>
                 <td>
+
+                  <!--result dropdown with dynamic options-->
                   <select name="result" required>
                     <% ['pass', 'pass capped', 'fail', 'excused', 'absent'].forEach(opt => { %>
                       <option value="<%= opt %>" <%= g.grade_result === opt ? "selected" : "" %>>
@@ -73,6 +83,8 @@
                   </select>
                 </td>
                 <td>
+
+                  <!--status badge with coloured results-->
                   <span class="badge <%= 
                     g.grade_result === 'pass' || g.grade_result === 'pass capped' ? 'badge-success' : 
                     g.grade_result === 'fail' ? 'badge-danger' : 'badge-warning' 
@@ -81,6 +93,7 @@
                   </span>
                 </td>
                 <td>
+                  <!--credits earned 0-120-->
                   <input 
                     type="number" 
                     name="credits" 
@@ -90,6 +103,8 @@
                     required 
                   />
                 </td>
+
+                <!--submit button-->
                 <td><button type="submit" class="button">Update</button></td>
               </form>
             </tr>
@@ -108,6 +123,7 @@
             <a href="?page=<%= currentPage - 1 %>&search=<%= search %>" class="page-button">Prev</a>
           <% } %>
 
+          <!--show 5 page numbers at a time-->
           <% 
             const maxVisible = 5;
             let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
@@ -117,6 +133,7 @@
             }
           %>
 
+          <!--render page number links-->
           <% for (let i = startPage; i <= endPage; i++) { %>
             <a 
               href="?page=<%= i %>&search=<%= search %>" 
@@ -124,6 +141,7 @@
             ><%= i %></a>
           <% } %>
 
+          <!--link to next page-->
           <% if (currentPage < totalPages) { %>
             <a href="?page=<%= currentPage + 1 %>&search=<%= search %>" class="page-button">Next</a>
           <% } %>
@@ -132,6 +150,7 @@
     <% } %>
   </main>
 
+  <!-- Footer displaying current year dynamically -->
   <footer>
     <p>University Portal © <%= currentYear %></p>
   </footer>

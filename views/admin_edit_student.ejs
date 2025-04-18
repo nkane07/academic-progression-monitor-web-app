@@ -1,5 +1,10 @@
+<!--
+  Form for editing an existing student's details.
+  Submits a POST request to /admin/students/:user_id/edit
+-->
 <form action="/admin/students/<%= student.user_id %>/edit" method="POST" class="form-section">
 
+  <!--first name-->
   <div class="form-group">
     <label for="first_name">First Name:</label>
     <input 
@@ -10,6 +15,7 @@
       required>
   </div>
 
+  <!--last name-->
   <div class="form-group">
     <label for="last_name">Last Name:</label>
     <input 
@@ -20,6 +26,7 @@
       required>
   </div>
 
+  <!--student number-->
   <div class="form-group">
     <label for="student_number">Student Number:</label>
     <input 
@@ -30,6 +37,7 @@
       required>
   </div>
 
+  <!--pathway dropdown-->
   <div class="form-group">
     <label for="pathway">Pathway:</label>
     <select name="pathway" id="pathway" required>
@@ -38,6 +46,7 @@
     </select>
   </div>
 
+  <!--year/ level drop down-->
   <div class="form-group">
     <label for="year">Year:</label>
     <select name="year" id="year" required>
@@ -47,6 +56,7 @@
     </select>
   </div>
 
+  <!--submit button-->
   <div class="form-group">
     <button type="submit" class="button">Save Changes</button>
   </div>

@@ -17,6 +17,7 @@
   <main class="container">
     <h3><i class="fas fa-book-open"></i> Module Grades</h3>
 
+     <!-- Grades table -->
     <table>
       <thead>
         <tr>
@@ -27,12 +28,16 @@
         </tr>
       </thead>
       <tbody>
+           <!-- Loop through each grade record -->
+            
         <% records.forEach(record => { 
+          <!-- Determine if incomplete record (grade of 0) -->
           const isZeroGrade = parseFloat(record.final_grade) === 0;
         %>
           <tr class="<%= isZeroGrade ? 'unread' : '' %>">
             <td data-label="Academic Year"><%= record.academic_year %></td>
             <td data-label="Module"><%= record.module_name %></td>
+             <!-- Apply grade incomplete if grade is zero -->
             <td data-label="Grade" class="<%= isZeroGrade ? 'grade-incomplete' : '' %>">
               <%= record.final_grade %>
             </td>
@@ -41,11 +46,10 @@
             </td>
           </tr>
         <% }) %>
-        
-        
       </tbody>
     </table>
 
+    <!-- Show a message if there are no records -->
     <% if (!records.length) { %>
       <p class="no-history-message">
         <i class="fas fa-info-circle"></i> No grade records found.
@@ -53,6 +57,7 @@
     <% } %>
   </main>
 
+  <!-- Footer displaying the current year dynamically -->
   <footer>
     <p>University Portal © <%= currentYear %></p>
   </footer>

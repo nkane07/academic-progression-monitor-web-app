@@ -17,12 +17,14 @@
 
   <main class="container">
 
+      <!-- Success alert -->
     <% if (req.query.sent) { %>
       <div class="alert success">
         <i class="fas fa-check-circle"></i> Your message was sent successfully!
       </div>
     <% } %>
 
+     <!-- Tab buttons to switch between inbox, sent, and contact advisor -->
     <div class="tab-buttons">
       <a href="/student/messages?box=inbox" class="button <%= box === 'inbox' ? 'active-tab' : '' %>">Inbox</a>
       <a href="/student/messages?box=sent" class="button <%= box === 'sent' ? 'active-tab' : '' %>">Sent</a>
@@ -31,6 +33,7 @@
       </a>
     </div>
 
+    <!-- Search form to filter messages by subject or sender -->
     <form method="GET" action="/student/messages" class="search-form">
       <input 
         type="text" 
@@ -38,10 +41,12 @@
         placeholder="Search by subject or sender" 
         value="<%= search || '' %>"
       />
+       <!-- Hidden input to preserve which box is active -->
       <input type="hidden" name="box" value="<%= box %>">
       <button type="submit"><i class="fas fa-search"></i> Search</button>
     </form>
 
+      <!-- Informational box explaining the current view -->
     <div class="info-box">
       <% if (box === 'inbox') { %>
         <p>This is your inbox. Click a message to read, reply, or delete.</p>
@@ -50,6 +55,7 @@
       <% } %>
     </div>
 
+     <!-- Empty state when there are no messages -->
     <% if (messages.length === 0) { %>
       <p class="empty-state">
         <% if (box === 'sent') { %>
@@ -59,6 +65,7 @@
         <% } %>
       </p>
     <% } else { %>
+        <!-- Table listing messages when present -->
       <table>
         <thead>
           <tr>
@@ -70,6 +77,7 @@
           </tr>
         </thead>
         <tbody>
+           <!-- Loop through each message -->
           <% messages.forEach(msg => { %>
             <tr 
               onclick="window.location='/student/messages/<%= msg.message_id %>'"
@@ -77,20 +85,25 @@
               class="<%= !msg.is_read && box === 'inbox' ? 'unread' : '' %>"
             >
               <td>
+                 <!-- Read/unread badge -->
                 <% if (!msg.is_read && box === 'inbox') { %>
                   <span class="badge badge-warning"><i class="fas fa-circle"></i> Unread</span>
                 <% } else { %>
                   <span class="badge badge-success"><i class="fas fa-check-circle"></i> Read</span>
                 <% } %>
               </td>
+              <!-- Message subject, with new badge if unread -->
               <td>
                 <%= msg.subject %>
                 <% if (!msg.is_read && box === 'inbox') { %>
                   <span class="badge badge-warning" style="margin-left: 6px;">New</span>
                 <% } %>
               </td>
+               <!-- Display recipient or sender based on the box -->
               <td><%= box === 'sent' ? msg.recipient_name : msg.sender_name %></td>
+               <!-- Preview of the message body -->
               <td><div class="message-preview"><%= msg.body %></div></td>
+              <!-- Timestamp formatted-->
               <td><%= new Date(msg.sent_at).toLocaleString() %></td>
             </tr>
           <% }) %>
@@ -100,10 +113,12 @@
 
   </main>
 
+  <!-- Footer displaying the current year dynamically -->
   <footer>
     <p>University Portal © <%= currentYear %></p>
   </footer>
 
+   <!-- hide success alert after 4 seconds -->
   <script>
     setTimeout(() => {
       const alert = document.querySelector('.alert.success');
@@ -112,7 +127,7 @@
         alert.style.opacity = '0';
         setTimeout(() => alert.remove(), 500);
       }
-    }, 3000);
+    }, 4000);
   </script>
 </body>
 </html>

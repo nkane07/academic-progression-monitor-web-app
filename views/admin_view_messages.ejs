@@ -12,12 +12,14 @@
   <%- include("partials/banner", { req }) %>
 
   <main class="page-container">
+     <!-- Show success alert if reply sent successfully -->
     <% if (req.query.reply_sent) { %>
       <div id="replySuccessMessage" class="alert success">
         <i class="fas fa-check-circle"></i> Reply sent successfully!
       </div>
     <% } %>
 
+    <!-- Header with title and back button -->
     <header class="page-header">
       <h2>Message Details</h2>
       <a href="/admin/messages" class="button" style="margin-top: 1rem;">← Back to Messages</a>
@@ -25,18 +27,24 @@
 
     <!-- Original Message -->
     <section class="summary-card" style="background-color: #fff7e6;">
+       <!-- Subject line -->
       <h3><%= message.subject %></h3>
+       <!-- Sender name -->
       <p><strong>From:</strong> <%= message.sender_name %></p>
+       <!-- Timestamp formatted to locale -->
       <p><strong>Sent:</strong> <%= new Date(message.sent_at).toLocaleString() %></p>
+        <!-- Message body -->
       <p style="margin-top: 1rem;"><%= message.body %></p>
     </section>
 
     <!-- Replies -->
     <section class="summary-card">
       <h4>Replies</h4>
+      <!-- If no replies exist, show a placeholder -->
       <% if (replies.length === 0) { %>
         <p>No replies yet.</p>
       <% } else { %>
+      <!-- Loop through each reply and render its details -->
         <% replies.forEach(reply => { %>
           <div class="message-reply" style="background-color: #e6f7ff; margin-top: 1rem; padding: 1rem; border-radius: 6px;">
             <p><strong><%= reply.sender_name %></strong> • <%= new Date(reply.sent_at).toLocaleString() %></p>
@@ -49,26 +57,33 @@
     <!-- Reply -->
     <section class="summary-card">
       <h4>Reply</h4>
+        <!-- Form to post a new reply -->
       <form method="POST" action="/admin/messages/reply" class="form-group">
+         <!-- Hidden field to associate reply with the parent message -->
         <input type="hidden" name="parent_id" value="<%= message.message_id %>">
+          <!-- Text area for reply content -->
         <textarea name="body" rows="4" required placeholder="Write your reply..."></textarea>
         <br>
+          <!-- Submit button with icon -->
         <button type="submit" class="button"><i class="fas fa-reply"></i> Send Reply</button>
       </form>
     </section>
 
     <!-- Delete -->
     <section class="summary-card">
+      <!-- Form to delete the message, with JS confirmation prompt -->
       <form action="/admin/messages/<%= message.message_id %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this message?')">
         <button type="submit" class="button danger"><i class="fas fa-trash"></i> Delete Message</button>
       </form>
     </section>
   </main>
 
+  <!-- Footer displaying current year dynamically -->
   <footer>
     <p>University Portal © <%= currentYear %></p>
   </footer>
 
+   <!--hide success alert after 4 seconds -->
   <script>
     setTimeout(() => {
       const msg = document.getElementById('replySuccessMessage');

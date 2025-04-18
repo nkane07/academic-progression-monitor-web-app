@@ -14,13 +14,14 @@
   </header>
 
   <main class="page-container">
+     <!-- Success alert -->
     <% if (req.query.replied) { %>
       <div id="replySuccessMessage" class="alert success">
         Reply sent successfully.
       </div>
     <% } %>
 
-    <!-- Main -->
+    <!-- Original message -->
     <section class="summary-card">
       <h3><%= message.subject %></h3>
       <p><strong>From:</strong> <%= message.sender_name %></p>
@@ -28,16 +29,20 @@
       <p style="margin-top: 1rem;"><%= message.body %></p>
     </section>
 
-    <!-- Replies -->
+    <!-- Conversation thread -->
     <section class="summary-card">
       <h4>Conversation Thread</h4>
+         <!-- If there are no replies - show placeholder -->
       <% if (replies.length === 0) { %>
         <p>No replies yet.</p>
       <% } else { %>
+         <!-- Loop through each reply and render it -->
         <% replies.forEach(reply => { %>
           <div class="message-reply">
+         <!-- Reply header with sender and timestamp -->
             <p><strong><%= reply.sender_name %></strong> 
               <small style="color: #555;">(<%= new Date(reply.sent_at).toLocaleString() %>)</small></p>
+               <!-- Reply body -->
             <p><%= reply.body %></p>
             <hr>
           </div>
@@ -48,8 +53,11 @@
     <!-- Reply  -->
     <section class="summary-card">
       <h4>Reply</h4>
+        <!-- Form to post a new reply -->
       <form method="POST" action="/student/messages/reply" class="form-group">
+          <!-- Hidden field to link reply to the parent message -->
         <input type="hidden" name="parent_id" value="<%= message.message_id %>">
+          <!-- Text area for reply content -->
         <textarea name="body" rows="4" required placeholder="Write your reply..."></textarea>
         <br>
         <button type="submit" class="button">Send Reply</button>
@@ -58,16 +66,19 @@
 
     <!-- Delete -->
     <section class="summary-card">
+        <!-- Form to delete the message, with JS confirm prompt -->
       <form action="/student/messages/<%= message.message_id %>/delete" method="POST" onsubmit="return confirm('Delete this message? This action cannot be undone.')">
         <button type="submit" class="button danger">Delete Message</button>
       </form>
     </section>
   </main>
 
+   <!-- Footer displaying current year dynamically -->
   <footer>
     <p>University Portal © <%= currentYear %></p>
   </footer>
 
+  <!-- hide the reply success alert after 4 seconds -->
   <script>
     setTimeout(() => {
       const msg = document.getElementById('replySuccessMessage');

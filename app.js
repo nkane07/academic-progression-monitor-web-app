@@ -266,7 +266,7 @@ function getStudentAcademicData(userId, callback) {
           resitModules.push(record.module_name);
         }
 
-        // Overwrite record result and grade for UI display if needed
+        // Overwrite record result and grade if needed
         record.final_grade = finalGrade;
         record.final_result = finalResult;
       });
@@ -858,6 +858,7 @@ app.get("/admin/messages/:id", requireAdmin, (req, res) => {
   });
 });
 
+//admin messages replies
 app.post("/admin/messages/reply", requireAdmin, (req, res) => {
   const senderId = req.session.userId;
   const { parent_id, body } = req.body;
@@ -1203,14 +1204,14 @@ app.post(
     let successfulInserts = 0;
     const failedRows = [];
 
-    const userId = req.session.userId; // ✅ pulled from session
+    const userId = req.session.userId; 
 
     if (!userId) {
       console.error("No user ID in session.");
       return res.status(401).send("Unauthorized: No user in session.");
     }
 
-    // ✅ Look up the username
+    // Look up the username
     const getUserQuery = `SELECT username FROM users WHERE user_id = ?`;
 
     conn.query(getUserQuery, [userId], (err, userResult) => {
@@ -1665,7 +1666,7 @@ app.get("/admin/students/:id/summary", requireAdmin, (req, res) => {
         }
       });
 
-      // average calc
+      // average
       const exceededAttempts = Object.entries(attemptTracker)
         .filter(([_, count]) => count >= 4)
         .map(([code]) => code);
@@ -1760,6 +1761,7 @@ app.post("/admin/students/:id/override-decision", requireAdmin, (req, res) => {
     }
   );
 });
+
 // login - forgot username
 
 // form
