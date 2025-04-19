@@ -1,4 +1,4 @@
-/* Page background */
+/*  login pages and general layout */
 body.login-page {
   background-color: #f1f3f9;
   margin: 0;
@@ -48,12 +48,14 @@ body.login-page {
   text-align: center;
 }
 
+/* Logo dimensions and containment */
 .branding-logo {
   width: 110px;
   height: 110px;
   object-fit: contain;
 }
 
+/* Portal title styling */
 .branding-text h1 {
   font-size: 2.5rem;
   margin: 0;
@@ -66,17 +68,20 @@ body.login-page {
   color: #666;
 }
 
+/* Login form constraints */
 .login-form {
   width: 100%;
   max-width: 400px; 
   margin: 0 auto; 
 }
 
+/* Individual form group spacing */
 .login-form .form-group {
   width: 100%;
   margin-bottom: 1.5rem;
 }
 
+/* Text and password input styling */
 .login-form input[type="text"],
 .login-form input[type="password"] {
   width: 100%;
@@ -88,6 +93,7 @@ body.login-page {
   box-sizing: border-box;
 }
 
+/* Login button appearance */
 .login-form button {
   width: 100%; 
   margin-top: 2rem;
@@ -107,7 +113,7 @@ body.login-page {
 }
 
 
-/* Error message */
+/* Error banner styling for login failures */
 .error-message {
   background-color: #f8d7da;
   color: #842029;
@@ -139,7 +145,7 @@ body.login-page {
   text-decoration: underline;
 }
 
-/* Banner */
+/* Fixed header/banner at top of login pages */
 .login-banner {
   position: fixed;
   top: 0;
@@ -182,8 +188,6 @@ body.login-page {
 }
 
 
-
-
 /* Responsive for small screens */
 @media (max-width: 768px) {
   .login-container {
@@ -220,8 +224,6 @@ body.login-page {
   }
 }
 
-
-
 /* Footer */
 footer {
 
@@ -233,7 +235,7 @@ footer {
 }
 
 
-/* Top banner */
+/* * Main banner/navigation styling for admin/student pages */
 .banner {
   position: fixed;
   top: 0;
@@ -282,6 +284,7 @@ footer {
   text-decoration: underline;
 }
 
+/* responsive screen size */
 @media screen and (max-width: 768px) {
   .banner-nav {
     flex-direction: column;
@@ -291,7 +294,7 @@ footer {
   }
 }
 
-
+/*logout */
 .logout-link {
   background-color: white;
   color: #b31b1b;
@@ -312,6 +315,7 @@ body {
   padding-top: 80px; 
 }
 
+/* Centered main content with max width */
 main {
   max-width: 1000px;
   margin: 0 auto;
@@ -412,7 +416,7 @@ tr:hover {
   font-size: 0.9rem;
 }
 
-
+/* Summary card */
 .summary-card {
   background: #fafafa;
   border-radius: 8px;
@@ -425,6 +429,7 @@ tr:hover {
   margin-right: auto;
 }
 
+/* Profile*/
 .profile-card {
   display: flex;
   flex-direction: column;
@@ -456,7 +461,6 @@ tr:hover {
 }
 
 
-
 .info-box {
   background: #f9f9f9;
   border: 1px solid #ddd;
@@ -470,7 +474,7 @@ tr:hover {
   font-size: 0.95rem;
 }
 
-/* fading banners */
+/* fading banners for alerts */
 .alert.success {
   background-color: #d4edda;
   color: #155724;
@@ -504,7 +508,7 @@ tr:hover {
   color: inherit;
 }
 
-
+/* Badge styling */
 .badge {
   padding: 5px 12px;
   border-radius: 12px;
@@ -530,7 +534,7 @@ tr.unread {
 }
 
 
-/* progression */
+/* progression decision */
 .failed-core-module {
   color: #dc3545; 
   font-weight: bold;
@@ -608,7 +612,7 @@ details.progression-details ul {
   pointer-events: none;
 }
 
-/* search bar */
+/* search form layout */
 .search-form {
   display: flex;
   flex-wrap: wrap; 
@@ -653,7 +657,7 @@ details.progression-details ul {
   color: #000;
 }
 
-/* dashboard */
+/* dashboard tiles */
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -697,12 +701,14 @@ footer {
   color: #666;
 }
 
+/* Number inputs and dropdowns*/
 input[type="number"], select {
   padding: 6px;
   border-radius: 4px;
   border: 1px solid #ccc;
 }
 
+/* Preview box for generated student numbers*/
 .student-number-preview,
 .student-id-preview p {
   margin-top: 0.25rem;
@@ -717,6 +723,7 @@ form select {
   margin-bottom: 1rem;
 }
 
+/* Page container */
 .page-container {
   max-width: 800px;
   margin: 2rem auto;
@@ -733,6 +740,7 @@ form select {
   margin-bottom: 1.5rem;
 }
 
+/* Form group */
 .form-group {
   margin-bottom: 1.5rem;
   display: flex;
@@ -836,6 +844,7 @@ canvas#progressionChart {
   background-color: #555;
 }
 
+/*No history message */
 .no-history-message {
   text-align: center;
   margin-top: 1rem;
@@ -843,6 +852,7 @@ canvas#progressionChart {
   color: #666;
 }
 
+/* Admin module search */
 .admin-module-search input[type="text"] {
   width: 300px; 
 }
@@ -855,11 +865,13 @@ canvas#progressionChart {
   margin-bottom: 1.5rem; 
 }
 
+/* Incomplete grade*/
 .grade-incomplete {
   color: #dc3545;
   font-weight: bold;
 }
 
+/*search bar layout*/
 .search-flex {
   display: flex;
   justify-content: center;
@@ -880,6 +892,7 @@ canvas#progressionChart {
   font-size: 14px;
 }
 
+/*message thread styling */
 .message-thread {
   margin-top: 20px;
 }
@@ -923,6 +936,7 @@ canvas#progressionChart {
   margin-bottom: 10px;
 }
 
+/*Missing grade colour */
 .missing-grade {
   background-color: #ffe6e6;
 }
