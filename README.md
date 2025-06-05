@@ -188,7 +188,10 @@ Secure form for users to reset their password after logging in with a temporary 
 All references are listed in technical report
 
 ## Authors and acknowledgment
-Developed by 40176951
+Niamh Kane
+MSc Software Development, Queen’s University Belfast
+GitHub: @nkane07
+Email: nkane07@qub.ac.uk
 Part of the Web Development CSC7062 module at Queens University Belfast
 Special thanks to lecturer John Busch for course delivery and project support
 
